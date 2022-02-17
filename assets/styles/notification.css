@@ -48,4 +48,5 @@
   font-weight: bold;
   text-transform: uppercase;
   color: white;
+  user-select: none;
 }
