@@ -6,39 +6,43 @@
   grid-template-columns: repeat(5, 4em);
   grid-template-rows: repeat(6, 4em);
   gap: 0.25em;
+
   margin-bottom: 1em;
 }
 
 .tile {
-  font-size: 2em;
-  color: white;
-  border: 0.05em solid hsl(240, 2%, 23%);
-  text-transform: uppercase;
-  font-weight: bold;
   display: flex;
   justify-content: center;
   align-items: center;
+
+  font-size: 2em;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: white;
+
+  border: 0.05em solid var(--clr-border);
   user-select: none;
+
   transition: transform 250ms linear;
 }
 
-.tile[data-state="active"] {
-  border-color: hsl(200, 1%, 34%);
+.tile[data-state="active-spot"] {
+  border-color: var(--clr-active-spot);
 }
 
-.tile[data-state="wrong"] {
+.tile[data-state="correct-spot"] {
   border: none;
-  background-color: hsl(240, 2%, 23%);
+  background-color: var(--clr-correct-spot);
 }
 
-.tile[data-state="wrong-location"] {
+.tile[data-state="wrong-spot"] {
   border: none;
-  background-color: hsl(49, 51%, 47%);
+  background-color: var(--clr-wrong-spot);
 }
 
-.tile[data-state="correct"] {
+.tile[data-state="missing-spot"] {
   border: none;
-  background-color: hsl(115, 29%, 43%);
+  background-color: var(--clr-missing-spot);
 }
 
 .tile.shake {

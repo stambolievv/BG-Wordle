@@ -1,3 +1,17 @@
+:root {
+  --clr-background: hsl(240, 3%, 7%);
+  --clr-border: hsl(240, 2%, 23%);
+  --clr-alert: hsl(204, 7%, 85%);
+
+  --clr-keyboard: hsl(200, 1%, 51%);
+  --clr-keyboard-hover: hsl(200, 1%, 71%);
+
+  --clr-active-spot: hsl(200, 1%, 34%);
+  --clr-correct-spot: hsl(115, 29%, 43%);
+  --clr-wrong-spot: hsl(49, 51%, 47%);
+  --clr-missing-spot: hsl(240, 2%, 23%);
+}
+
 *,
 *::after,
 *::before {
@@ -13,6 +27,6 @@ body {
   margin: 0;
   padding: 1em;
 
-  background-color: hsl(240, 3%, 7%);
+  background-color: var(--clr-background);
   font-size: clamp(0.5rem, 2.5vmin, 1.5rem);
 }
