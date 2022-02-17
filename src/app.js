@@ -16,8 +16,8 @@ const notification = document.getElementById('notification');
 const score = document.getElementById('score');
 const highscore = document.getElementById('highscore');
 
-score.textContent = `SCORE: ${game.score}`;
-highscore.textContent = `HIGHSCORE: ${game.highscore}`;
+score.textContent = `Резултат: ${game.score}`;
+highscore.textContent = `Най-добър резултат: ${game.highscore}`;
 game.cheat(game.targetWord);
 
 startInteraction();
@@ -185,8 +185,8 @@ function checkScore() {
     game.highscore = game.score;
   }
 
-  score.textContent = `SCORE: ${game.score}`;
-  highscore.textContent = `HIGHSCORE: ${game.highscore}`;
+  score.textContent = `Резултат: ${game.score}`;
+  highscore.textContent = `Най-добър резултат: ${game.highscore}`;
 }
 
 // Handle Alerts
