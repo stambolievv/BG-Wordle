@@ -1,0 +1,27 @@
+{
+  "name": "bg-wordle",
+  "version": "1.0.0",
+  "description": "Play BG Wordle with unlimited words! Guess words with 5 letters. Can you guess the hidden word in 6 tries?",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stambolievv/BG-Worlde.git"
+  },
+  "bugs": {
+    "url": "https://github.com/stambolievv/BG-Wordle/issues"
+  },
+  "keywords": [
+    "game",
+    "wordle",
+    "html5"
+  ],
+  "author": "DKS",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.6.0",
+    "git": "^0.1.5"
+  }
+}
