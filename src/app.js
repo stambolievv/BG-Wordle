@@ -1,15 +1,24 @@
 import dictionary from './data/dictionary.js';
 
-const WORD_LENGTH = 5;
-const FLIP_ANIMATION_DURATION = 500;
-const DANCE_ANIMATION_DURATION = 500;
+const game = {
+  targetWord: dictionary[Math.floor(Math.random() * dictionary.length)],
+  score: 0,
+  highscore: Number(localStorage.getItem('bg-wordle-highscore')) || 0,
+  wordLength: 5,
+  flipDuration: 500,
+  danceDuration: 500,
+  cheat: (word) => console.log(`%cДумата ти е %c"${word}"%c, но защо %cмамиш%c?`, 'color:orange;font-size:1.4rem', 'color:lime;font-size:1.6rem;font-weight:bolder', 'color:orange;font-size:1.4rem;', 'color:red;font-size:1.4rem;', 'color:orange;font-size:1.4rem')
+};
 
 const keyboard = document.getElementById('keyboard');
 const guessGrid = document.getElementById('guess-grid');
 const notification = document.getElementById('notification');
+const score = document.getElementById('score');
+const highscore = document.getElementById('highscore');
 
-const targetWord = dictionary[Math.floor(Math.random() * dictionary.length)];
-console.log(`%c Думата ти е %c"${targetWord}"%c, но защо %cмамиш%c?`, 'color:orange;font-size:1.4rem', 'color:lime;font-size:1.6rem;font-weight:bolder', 'color:orange;font-size:1.4rem;', 'color:red;font-size:1.4rem;', 'color:orange;font-size:1.4rem');
+score.textContent = `SCORE: ${game.score}`;
+highscore.textContent = `HIGHSCORE: ${game.highscore}`;
+game.cheat(game.targetWord);
 
 startInteraction();
 
@@ -26,7 +35,7 @@ function stopInteraction() {
 
 //Handle Active Tiles
 function getActiveTiles() {
-  return guessGrid.querySelectorAll('[data-state="active"]');
+  return guessGrid.querySelectorAll('[data-state="active-spot"]');
 }
 
 // Handle Inputs
@@ -35,7 +44,7 @@ function handleMouseClick(e) {
 
   if (e.target.matches('[data-enter]')) { return submitGuess(); }
 
-  if (e.target.matches('[data-delete]') || e.target.matches('svg') || e.target.matches('path')) { return deleteKey(); }
+  if (e.target.matches('[data-delete]')) { return deleteKey(); }
 }
 
 function handleKeyPress(e) {
@@ -49,19 +58,19 @@ function handleKeyPress(e) {
 function pressKey(key) {
   const activeTiles = getActiveTiles();
 
-  if (activeTiles.length >= WORD_LENGTH) { return; }
+  if (activeTiles.length >= game.wordLength) { return; }
 
   const nextTile = guessGrid.querySelector(':not([data-letter])');
   nextTile.textContent = key;
   nextTile.dataset.letter = key;
-  nextTile.dataset.state = 'active';
+  nextTile.dataset.state = 'active-spot';
 }
 
 function submitGuess() {
   const activeTiles = [...getActiveTiles()];
   const guess = activeTiles.reduce((word, tile) => word + tile.dataset.letter, '');
 
-  if (activeTiles.length != WORD_LENGTH) {
+  if (activeTiles.length != game.wordLength) {
     showAlert('Няма достатъчно букви!');
     shakeTiles(activeTiles);
     return;
@@ -96,20 +105,20 @@ function flipTile(tile, index, array, guess) {
 
   setTimeout(() => {
     tile.classList.add('flip');
-  }, (index * FLIP_ANIMATION_DURATION) / 2);
+  }, (index * game.flipDuration) / 2);
 
   tile.addEventListener('transitionend', () => {
     tile.classList.remove('flip');
 
-    if (targetWord[index] == letter) {
-      tile.dataset.state = 'correct';
-      key.classList.add('correct');
-    } else if (targetWord.includes(letter)) {
-      tile.dataset.state = 'wrong-location';
-      key.classList.add('wrong-location');
+    if (game.targetWord[index] == letter) {
+      tile.dataset.state = 'correct-spot';
+      key.classList.add('correct-spot');
+    } else if (game.targetWord.includes(letter)) {
+      tile.dataset.state = 'wrong-spot';
+      key.classList.add('wrong-spot');
     } else {
-      tile.dataset.state = 'wrong';
-      key.classList.add('wrong');
+      tile.dataset.state = 'missing-spot';
+      key.classList.add('missing-spot');
     }
 
     if (index == array.length - 1) {
@@ -144,38 +153,69 @@ function danceTiles(tiles) {
       tile.addEventListener('animationend', () => {
         tile.classList.remove('dance');
       }, { once: true });
-    }, (index * DANCE_ANIMATION_DURATION) / 5);
+    }, (index * game.danceDuration) / 5);
 
   });
 }
 
 // Handle Win/Lose Scenario 
 function checkWinLose(guess, tiles) {
-  if (guess == targetWord) {
-    showAlert('Печелиш!!!', 5000);
+  if (guess == game.targetWord) {
+    game.score += 2;
+    showAlert('Браво. Ти спечели 2 точки! Смело напред.', 3000, true);
     danceTiles(tiles);
     stopInteraction();
+    checkScore();
     return;
   }
 
   const remainingTiles = guessGrid.querySelectorAll(':not([data-letter])');
   if (remainingTiles.length == 0) {
-    showAlert(targetWord.toUpperCase(), null);
+    if (game.score > 0) { game.score -= 1; }
+    showAlert(`Уфф. Твоята дума беше "${game.targetWord}". Загуби 1 точка!`, 3000, true);
     stopInteraction();
+    checkScore();
+    return;
   }
 }
 
+function checkScore() {
+  if (game.score > game.highscore) {
+    localStorage.setItem('bg-wordle-highscore', game.score);
+    game.highscore = game.score;
+  }
+
+  score.textContent = `SCORE: ${game.score}`;
+  highscore.textContent = `HIGHSCORE: ${game.highscore}`;
+}
+
 // Handle Alerts
-function showAlert(message, duration = 1000) {
+function showAlert(message, duration = 1000, gameover = false) {
   const alert = document.createElement('div');
   alert.textContent = message;
   alert.classList.add('alert');
   notification.appendChild(alert);
 
-  if (duration == null) { return; }
-
   setTimeout(() => {
     alert.classList.add('hide');
     alert.addEventListener('transitionend', alert.remove());
+
+    if (gameover) {
+      [...keyboard.querySelectorAll('.key')].map(key => {
+        return key.className = 'key';
+      });
+
+      [...guessGrid.querySelectorAll('.tile')].forEach(tile => {
+        tile.textContent = '';
+        delete tile.dataset.letter;
+        delete tile.dataset.state;
+        return;
+      });
+
+      game.targetWord = dictionary[Math.floor(Math.random() * dictionary.length)];
+
+      game.cheat(game.targetWord);
+      startInteraction();
+    }
   }, duration);
 }
