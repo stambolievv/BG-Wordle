@@ -1,7 +1,7 @@
 {
   "name": "bg-wordle",
   "version": "1.0.0",
-  "description": "Play BG Wordle with unlimited words! Guess words with 5 letters. Can you guess the hidden word in 6 tries?",
+  "description": "Play BG Wordle with unlimited 5 letter words! Can you guess the hidden word in 6 tries?",
   "main": "index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
