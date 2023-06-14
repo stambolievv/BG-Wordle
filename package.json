@@ -1,27 +1,48 @@
 {
   "name": "bg-wordle",
   "version": "1.0.0",
-  "description": "Play BG Wordle with unlimited 5 letter words! Can you guess the hidden word in 6 tries?",
+  "description": "Play BG Wordle with unlimited 5-letter words! Can you guess the hidden word in 6 tries?",
   "main": "index.html",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite serve",
+    "build": "vite build && npm run imageCompression",
+    "preview": "npm run build && vite preview",
+    "format": "prettier --write ./src/**",
+    "imageCompression": "imagemin dist/assets/images/* --out-dir=dist/assets/images",
+    "gh-pages-deploy": "npm run gh-pages-build && npm run gh-pages-create && npm run gh-pages-publish",
+    "gh-pages-build": "set BRANCH=gh-pages&& npm run build && copy dist\\index.html dist\\404.html",
+    "gh-pages-create": "git rev-parse --verify --quiet gh-pages || (git branch gh-pages && git push --set-upstream origin gh-pages)",
+    "gh-pages-publish": "gh-pages --dist=dist --message=\"fix: deploy dist for github pages\""
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/stambolievv/BG-Worlde.git"
-  },
-  "bugs": {
-    "url": "https://github.com/stambolievv/BG-Wordle/issues"
-  },
+  "author": "Deyan 'stambolievv' Stamboliev",
+  "license": "Apache-2.0",
   "keywords": [
+    "javascript",
     "game",
     "wordle",
     "html5"
   ],
-  "author": "DKS",
-  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stambolievv/BG-Wordle.git"
+  },
+  "bugs": {
+    "url": "https://github.com/stambolievv/BG-Wordle/issues"
+  },
   "devDependencies": {
-    "eslint": "^8.6.0",
-    "git": "^0.1.5"
+    "@babel/eslint-parser": "^7.21.8",
+    "eslint": "^8.42.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-jsdoc": "^46.2.6",
+    "eslint-plugin-promise": "^6.1.1",
+    "gh-pages": "^5.0.0",
+    "imagemin-cli": "^7.0.0",
+    "prettier": "^2.8.8",
+    "vite": "^3.2.5",
+    "vite-plugin-banner": "^0.7.0",
+    "vite-plugin-html": "^3.2.0",
+    "vite-plugin-static-copy": "^0.16.0"
   }
 }
