@@ -15,7 +15,8 @@
   padding: 1.5em;
   margin-bottom: 0.5em;
 
-  background-color: var(--clr-alert);
+  background-color: var(--clr-alert-bg);
+  color: var(--clr-alert-text);
   opacity: 1;
 
   font-size: 1.2em;
@@ -39,14 +40,10 @@
 
 #score-text {
   display: flex;
-  justify-content: space-between;
-  align-content: center;
+  justify-content: space-around;
+  align-items: center;
 
-  margin: 0.1em 5em;
-
-  font-size: 1.1em;
+  color: var(--clr-score-text);
   font-weight: bold;
   text-transform: uppercase;
-  color: white;
-  user-select: none;
 }

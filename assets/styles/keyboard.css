@@ -16,8 +16,8 @@
 
   font-size: inherit;
   text-transform: uppercase;
-  color: white;
-  fill: white;
+  color: var(--clr-keyboard-keys);
+  fill: var(--clr-keyboard-keys);
   background-color: var(--clr-keyboard);
 
   border: none;
@@ -26,18 +26,19 @@
   user-select: none;
 }
 
-.key[data-enter],
-.key[data-delete] {
+.key[data-key="Enter"],
+.key[data-key="Delete"] {
   grid-column: span 3;
 }
 
-.key > svg {
+.key>svg {
   width: 1.75em;
   height: 1.75em;
 }
 
+.key:active,
 .key:hover,
-.key:focus {
+.key:focus-visible {
   background-color: var(--clr-keyboard-hover);
 }
 
@@ -51,4 +52,10 @@
 
 .key.correct-spot {
   background-color: var(--clr-correct-spot);
+}
+
+@media (hover: none) {
+  .key:hover {
+    background-color: var(--clr-keyboard);
+  }
 }

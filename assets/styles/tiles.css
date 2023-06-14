@@ -6,8 +6,7 @@
   grid-template-columns: repeat(5, 4em);
   grid-template-rows: repeat(6, 4em);
   gap: 0.25em;
-
-  margin-bottom: 1em;
+  margin-block: 1em;
 }
 
 .tile {
@@ -18,10 +17,9 @@
   font-size: 2em;
   font-weight: bold;
   text-transform: uppercase;
-  color: white;
+  color: var(--clr-tile-text);
 
   border: 0.05em solid var(--clr-border);
-  user-select: none;
 
   transition: transform 250ms linear;
 }
