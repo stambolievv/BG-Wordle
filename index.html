@@ -3,114 +3,39 @@
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <!-- Viewport -->
-    <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no" />
-    <!-- Title -->
-    <title>BG Wordle</title>
-    <!-- Style -->
-    <link rel="stylesheet" href="./assets/styles/style.css" />
-    <!-- Icon -->
-    <link rel="apple-touch-icon" sizes="180x180" href="./assets/images/logo/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="./assets/images/logo/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="./assets/images/logo/favicon-16x16.png" />
-    <link rel="manifest" href="./assets/images/logo/site.webmanifest" />
-    <link rel="mask-icon" href="./assets/images/logo/safari-pinned-tab.svg" color="#57ac57" />
-    <link rel="shortcut icon" href="./assets/images/logo/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/favicon/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon/favicon-16x16.png" />
+    <link rel="manifest" href="/assets/images/favicon/site.webmanifest" />
+    <link rel="mask-icon" href="/assets/images/favicon/safari-pinned-tab.svg" color="#57ac57" />
+    <link rel="shortcut icon" href="/assets/images/favicon/favicon.ico" />
     <meta name="msapplication-TileColor" content="#57ac57" />
-    <meta name="msapplication-config" content="./assets/images/logo/browserconfig.xml" />
+    <meta name="msapplication-config" content="<%- APP_HOST_URL %>/assets/images/favicon/browserconfig.xml" />
     <meta name="theme-color" content="#57ac57" />
-    <!-- Meta -->
+    <meta name="color-scheme" content="dark" />
     <meta name="title" content="BG Wordle" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="BG Wordle" />
     <meta name="application-name" content="BG Wordle" />
-    <meta name="description" content="Play BG Wordle with unlimited 5 letter words! Can you guess the hidden word in 6 tries?" />
-    <!-- OpenGraph -->
-    <meta property="og:site_name" content="BG Wordle" />
+    <meta name="description" content="Play BG Wordle with unlimited 5-letter words! Can you guess the hidden word in 6 tries?" />
     <meta property="og:title" content="BG Wordle" />
-    <meta property="og:description" content="Play BG Wordle with unlimited 5 letter words! Can you guess the hidden word in 6 tries?" />
+    <meta property="og:description" content="Play BG Wordle with unlimited 5-letter words! Can you guess the hidden word in 6 tries?" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="./assets/images/logo/192x192.png" />
-    <meta property="og:image:width" content="192" />
-    <meta property="og:image:height" content="192" />
-    <meta itemprop="image" content="./assets/images/logo/180x180.png" />
-    <!-- Script -->
-    <script type="module" src="./src/app.js"></script>
+    <meta property="og:image" content="<%- APP_HOST_URL %>/assets/images/thumbnail.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:title" content="BG Wordle">
+    <meta name="twitter:description" content="Play BG Wordle with unlimited 5-letter words! Can you guess the hidden word in 6 tries?">
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="<%- APP_HOST_URL %>/assets/images/thumbnail.png">
+    <meta itemprop="name" content="BG Wordle">
+    <meta itemprop="description" content="Play BG Wordle with unlimited 5-letter words! Can you guess the hidden word in 6 tries?">
+    <meta itemprop="image" content="<%- APP_HOST_URL %>/assets/images/thumbnail.png" />
+    <title>BG Wordle</title>
+    <link rel="stylesheet" href="/assets/styles/style.css" />
+    <script type="module" src="/src/app.js" defer></script>
   </head>
-  <body>
-    <div id="notification"></div>
-    <div id="score-text"><span id="score">Резултат: 0</span><span id="highscore">Най-добър резултат: 0</span></div>
-    <div id="guess-grid">
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-      <div class="tile"></div>
-    </div>
-    <div id="keyboard">
-      <button class="key" data-key="Я">Я</button>
-      <button class="key" data-key="В">В</button>
-      <button class="key" data-key="Е">Е</button>
-      <button class="key" data-key="Р">Р</button>
-      <button class="key" data-key="Т">Т</button>
-      <button class="key" data-key="Ъ">Ъ</button>
-      <button class="key" data-key="У">У</button>
-      <button class="key" data-key="И">И</button>
-      <button class="key" data-key="О">О</button>
-      <button class="key" data-key="П">П</button>
-      <button class="key" data-key="Ч">Ч</button>
-      <button class="key" data-key="А">А</button>
-      <button class="key" data-key="С">С</button>
-      <button class="key" data-key="Д">Д</button>
-      <button class="key" data-key="Ф">Ф</button>
-      <button class="key" data-key="Г">Г</button>
-      <button class="key" data-key="Х">Х</button>
-      <button class="key" data-key="Й">Й</button>
-      <button class="key" data-key="К">К</button>
-      <button class="key" data-key="Л">Л</button>
-      <button class="key" data-key="Ш">Ш</button>
-      <button class="key" data-key="Щ">Щ</button>
-      <button class="key" data-enter>Enter</button>
-      <button class="key" data-key="З">З</button>
-      <button class="key" data-key="Ь">Ь</button>
-      <button class="key" data-key="Ц">Ц</button>
-      <button class="key" data-key="Ж">Ж</button>
-      <button class="key" data-key="Б">Б</button>
-      <button class="key" data-key="Н">Н</button>
-      <button class="key" data-key="М">М</button>
-      <button class="key" data-key="Ю">Ю</button>
-      <button class="key" data-delete>
-        <svg data-delete xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-          <path data-delete fill="var(--color-tone-1)" d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7.07L2.4 12l4.66-7H22v14zm-11.59-2L14 13.41 17.59 17 19 15.59 15.41 12 19 8.41 17.59 7 14 10.59 10.41 7 9 8.41 12.59 12 9 15.59z">
-          </path>
-        </svg>
-      </button>
-    </div>
-  </body>
+  <body></body>
 </html>
