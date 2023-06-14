@@ -1,5 +1,5 @@
 import WordleGame from './WordleGame';
-import { createArray, createElement, isNil, isString } from './utilities';
+import { createArray, createElement, isString } from './utilities';
 import config from './config';
 
 export default class WordleUIController {
@@ -10,14 +10,14 @@ export default class WordleUIController {
   #game;
   /**
    * @description The controller used to manage event listeners and abort events.
-   * @type {AbortController | null}
+   * @type {AbortController}
    */
   #controller;
 
   constructor() {
     this.#game = new WordleGame(WordleUIController.createInterface());
 
-    this.#controller = null;
+    this.#controller = new AbortController();
     this.#toggleEventListeners(true);
   }
 
@@ -26,8 +26,6 @@ export default class WordleUIController {
    * @param {boolean} enable - Flag indicating whether to enable or disable event listeners.
    */
   #toggleEventListeners(enable) {
-    if (isNil(this.#controller)) this.#controller = new AbortController();
-
     const eventHandler = event => this.#eventHandler(event.key || event.target?.dataset?.key);
 
     if (enable) {
