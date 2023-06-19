@@ -166,15 +166,6 @@ export function clamp(value, max) {
 }
 
 /**
- * @description Generates a random hexadecimal color code.
- * @returns {string} A random hexadecimal color code in the format `#RRGGBB`.
- */
-export function randomHexColor() {
-  const color = (~~(seedRandom() * 0xffffff)).toString(16).padStart(6, '0');
-  return `#${color}`;
-}
-
-/**
  * @description Converts an angle in radians to degrees.
  * @param {number} radians - The angle to convert, in radians.
  * @returns {number} The angle in degrees.
@@ -190,6 +181,64 @@ export function radiansToDegrees(radians) {
  */
 export function degreesToRadians(degrees) {
   return degrees * (Math.PI / 180);
+}
+
+/**
+ * @description Generates a random hexadecimal color string.
+ * @returns {string} A random hexadecimal color string in the format `#RRGGBB`.
+ */
+export function randomHexColor() {
+  const color = (~~(seedRandom() * 0xffffff)).toString(16).padStart(6, '0');
+  return `#${color}`.toUpperCase();
+}
+
+/**
+ * @description Generates a random RGB color string.
+ * @param {Raw} [raw=false] - Optional boolean parameter to output the raw RGB values without string concatenation.
+ * @returns {RGBColor<Raw>} A random RGB color string in the format `rgb(0-255, 0-255, 0-255)` or an object with raw values if `raw` is `true`.
+ * @template {boolean} [Raw=never]
+ */
+export function randomRGBColor(raw) {
+  const [red, green, blue] = createArray(3, () => getRandomInt(0, 255));
+
+  return /**@type {RGBColor<Raw>}*/ (
+    raw
+      ? { r: red, g: green, b: blue }
+      : `rgb(${red}, ${green}, ${blue})`
+  );
+}
+
+/**
+ * @description Converts RGB values to a hexadecimal color string.
+ * @param {number | string} r - The red component value (0-255).
+ * @param {number | string} g - The green component value (0-255).
+ * @param {number | string} b - The blue component value (0-255).
+ * @returns {string} A hexadecimal color string in the format `#RRGGBB`.
+ */
+export function rgbToHex(r, g, b) {
+  const color = (1 << 24 | (+r) << 16 | (+g) << 8 | (+b)).toString(16).substring(1);
+  return `#${color}`.toUpperCase();
+}
+
+/**
+ * @description Converts a hexadecimal color string to RGB values.
+ * @param {string} hex - The hexadecimal color string in the format `#RRGGBB` | `#RGB` | `RRGGBB` | `RGB`.
+ * @param {Raw} [raw=false] - Optional boolean parameter to output the raw RGB values without string concatenation.
+ * @returns {RGBColor<Raw>} A RGB color string in the format `rgb(0-255, 0-255, 0-255)` or an object with raw values if `raw` is `true`.
+ * @template {boolean} [Raw=never]
+ */
+export function hexToRgb(hex, raw) {
+  const cleanHex = hex.startsWith('#') ? hex.substring(1) : hex;
+  const fullHex = cleanHex.length === 3 ? createArray(3, (i) => cleanHex[i] + cleanHex[i]).join('') : cleanHex;
+
+  const bigint = parseInt(fullHex, 16);
+  const [red, green, blue] = createArray(3, (i) => Number((bigint >> (16 - i * 8)) & 255));
+
+  return /**@type {RGBColor<Raw>}*/ (
+    raw
+      ? { r: red, g: green, b: blue }
+      : `rgb(${red}, ${green}, ${blue})`
+  );
 }
 
 /**
@@ -329,7 +378,16 @@ export function isFunction(value) {
  * @template T - The type of the elements in the array.
  * @template {number} [N=never] - The number of elements to sample (optional).
  */
-
+/**
+ * @typedef {([B] extends [never] ? string : RGB)} RGBColor A RGB color string in the format `rgb(0-255, 0-255, 0-255)` or an object with raw values if `raw` is `true`.
+ * @template {boolean} [B=never] - Boolean parameter to output the raw RGB values without string concatenation. (optional).
+ */
+/**
+ * @typedef {object} RGB An object containing the RGB values.
+ * @property {number} r - The red component value (0-255).
+ * @property {number} g - The green component value (0-255).
+ * @property {number} b - The blue component value (0-255).
+ */
 /**
  * @typedef {object} InternalCreationOptions Represents the internal creation options for an element. These options are specific to the internal implementation and usage of the `createElement` function. They provide properties for the parent element, attributes, children, and style of the new element. By separating these internal options, we can ensure that the core functionality of the `createElement` function remains intact and unaffected by external factors.
  * @property {Element} parent The parent to append the new element to.
