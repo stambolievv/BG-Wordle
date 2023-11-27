@@ -57,7 +57,7 @@ The app provides an intuitive and user-friendly interface for a seamless gaming 
 ## Getting Started
 These instructions will get you a copy of the project up and running on your local machine for development. See deployment for notes on how to deploy the project on a live system.
 
-### Clone project
+### Clone Project
 ```bash
 git clone git@github.com:stambolievv/BG-Wordle.git
 ```
