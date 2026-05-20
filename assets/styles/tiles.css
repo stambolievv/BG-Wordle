@@ -3,10 +3,9 @@
   justify-content: center;
   align-content: center;
   flex-grow: 1;
-  grid-template-columns: repeat(5, 4em);
-  grid-template-rows: repeat(6, 4em);
+  grid-template-columns: repeat(5, var(--tile-size));
+  grid-template-rows: repeat(6, var(--tile-size));
   gap: 0.25em;
-  margin-block: 1em;
 }
 
 .tile {
@@ -14,7 +13,7 @@
   justify-content: center;
   align-items: center;
 
-  font-size: 2em;
+  font-size: calc(var(--tile-size) * 0.5);
   font-weight: bold;
   text-transform: uppercase;
   color: var(--clr-tile-text);
@@ -31,16 +30,19 @@
 .tile[data-state="correct-spot"] {
   border: none;
   background-color: var(--clr-correct-spot);
+  color: hsl(0, 0%, 100%);
 }
 
 .tile[data-state="wrong-spot"] {
   border: none;
   background-color: var(--clr-wrong-spot);
+  color: hsl(0, 0%, 100%);
 }
 
 .tile[data-state="missing-spot"] {
   border: none;
   background-color: var(--clr-missing-spot);
+  color: hsl(0, 0%, 100%);
 }
 
 .tile.shake {

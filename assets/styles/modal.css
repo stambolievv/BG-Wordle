@@ -1,0 +1,235 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 5dvh;
+  animation: modal-fade 150ms ease;
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal {
+  background-color: var(--clr-background);
+  border: 1px solid var(--clr-border);
+  border-radius: 0.5em;
+  width: min(480px, calc(100vw - 2rem));
+  max-height: 88dvh;
+  overflow-y: auto;
+  color: var(--clr-tile-text);
+  font-size: var(--font-size-ui);
+}
+
+.modal-header {
+  position: sticky;
+  top: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1em 1.25em;
+  background-color: var(--clr-background);
+  border-bottom: 1px solid var(--clr-border);
+}
+
+.modal-header h2 {
+  font-size: 1.1em;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.modal-close {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 2em;
+  height: 2em;
+  background: none;
+  border: none;
+  font-size: 1.2em;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--clr-tile-text);
+  border-radius: 0.25em;
+}
+
+.modal-close:hover,
+.modal-close:focus-visible {
+  background-color: var(--clr-border);
+}
+
+.modal-body {
+  padding: 1.25em 1.5em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9em;
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+.modal-body hr {
+  border: none;
+  border-top: 1px solid var(--clr-border);
+}
+
+.modal-body ul {
+  padding-left: 1.25em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+  list-style: disc;
+}
+
+.example-row {
+  display: flex;
+  gap: 0.3em;
+  margin-block: 0.25em;
+}
+
+.example-tile {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 2.8em;
+  height: 2.8em;
+  font-size: 1.1em;
+  font-weight: bold;
+  border: 0.05em solid var(--clr-border);
+  color: var(--clr-tile-text);
+}
+
+.example-tile.correct-spot {
+  background-color: var(--clr-correct-spot);
+  border-color: var(--clr-correct-spot);
+  color: hsl(0, 0%, 100%);
+}
+
+.example-tile.wrong-spot {
+  background-color: var(--clr-wrong-spot);
+  border-color: var(--clr-wrong-spot);
+  color: hsl(0, 0%, 100%);
+}
+
+.example-tile.missing-spot {
+  background-color: var(--clr-missing-spot);
+  border-color: var(--clr-missing-spot);
+  color: hsl(0, 0%, 100%);
+}
+
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1em;
+  padding: 0.9em 0;
+  border-bottom: 1px solid var(--clr-border);
+}
+
+.setting-row:last-child {
+  border-bottom: none;
+}
+
+.setting-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+}
+
+.setting-label strong {
+  text-transform: uppercase;
+  font-size: 0.95em;
+}
+
+.setting-label span {
+  font-size: 0.8em;
+  opacity: 0.65;
+}
+
+.setting-btn {
+  flex-shrink: 0;
+  padding: 0.5em 1em;
+  background-color: var(--clr-keyboard);
+  color: var(--clr-keyboard-keys);
+  border: none;
+  border-radius: 0.25em;
+  cursor: pointer;
+  font-size: inherit;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.setting-btn:hover {
+  background-color: var(--clr-keyboard-hover);
+}
+
+.toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-track {
+  width: 2.6em;
+  height: 1.4em;
+  background-color: var(--clr-border);
+  border-radius: 1em;
+  display: flex;
+  align-items: center;
+  padding: 0.15em;
+  transition: background-color 200ms;
+}
+
+.toggle-thumb {
+  width: 1.1em;
+  height: 1.1em;
+  background-color: hsl(0, 0%, 100%);
+  border-radius: 50%;
+  transition: transform 200ms;
+  flex-shrink: 0;
+}
+
+.toggle input:checked + .toggle-track {
+  background-color: var(--clr-correct-spot);
+}
+
+.toggle input:checked + .toggle-track .toggle-thumb {
+  transform: translateX(1.2em);
+}
+
+.toggle:focus-within .toggle-track {
+  outline: 2px solid var(--clr-correct-spot);
+  outline-offset: 2px;
+}
+
+.toggle input:disabled + .toggle-track {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.toggle:has(input:disabled) {
+  cursor: not-allowed;
+}
+
+@keyframes modal-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}

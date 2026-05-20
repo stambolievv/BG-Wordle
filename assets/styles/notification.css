@@ -19,7 +19,7 @@
   color: var(--clr-alert-text);
   opacity: 1;
 
-  font-size: 1.2em;
+  font-size: var(--font-size-ui);
   font-weight: bold;
   text-transform: uppercase;
   text-align: center;
@@ -36,14 +36,4 @@
 
 .alert.hide {
   opacity: 0;
-}
-
-#score-text {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-
-  color: var(--clr-score-text);
-  font-weight: bold;
-  text-transform: uppercase;
 }

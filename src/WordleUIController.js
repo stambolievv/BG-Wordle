@@ -1,5 +1,6 @@
 import WordleGame from './WordleGame';
 import { createArray, createElement, isString } from './utilities';
+import { createHelpIconSVG, createSettingsIconSVG, createDeleteKeySVG, createHelpModal, createSettingsModal } from './templates';
 import Config from './config';
 
 /**
@@ -8,6 +9,8 @@ import Config from './config';
  * @property {HTMLElement} scoreboard - Container that displays the current and high score.
  * @property {HTMLElement} grid - The game grid whose `.tile` children are the letter cells.
  * @property {HTMLElement} keyboard - The on-screen keyboard whose `.key` children are the letter buttons.
+ * @property {HTMLElement} helpModal - The how-to-play overlay modal.
+ * @property {HTMLElement} settingsModal - The settings overlay modal.
  */
 
 export default class WordleUIController {
@@ -28,10 +31,17 @@ export default class WordleUIController {
    * wires up the help and settings modals.
    */
   constructor() {
-    this.#game = new WordleGame(WordleUIController.createInterface());
+    if (localStorage.getItem('bg-wordle-theme') === 'light') {
+      document.documentElement.classList.add('light-theme');
+    }
+
+    const { helpModal, settingsModal, ...gameElements } = WordleUIController.createInterface();
+
+    this.#game = new WordleGame(gameElements);
     this.#controller = new AbortController();
 
     this.#toggleEventListeners(true);
+    this.#setupModals(helpModal, settingsModal);
   }
 
   /**
@@ -80,31 +90,64 @@ export default class WordleUIController {
   }
 
   /**
+   * @description Wires up modal open/close interactions and settings toggle handlers.
+   * Game input is disabled while any modal is open and re-enabled on close.
+   * @param {HTMLElement} helpModal - The help overlay element.
+   * @param {HTMLElement} settingsModal - The settings overlay element.
+   */
+  #setupModals(helpModal, settingsModal) {
+    const openModal = (/** @type {HTMLElement} */ modal) => {
+      this.#toggleEventListeners(false);
+      modal.removeAttribute('hidden');
+    };
+
+    const closeModal = (/** @type {HTMLElement} */ modal) => {
+      modal.setAttribute('hidden', '');
+      this.#toggleEventListeners(true);
+    };
+
+    document.getElementById('help-btn')?.addEventListener('click', () => openModal(helpModal));
+    document.getElementById('settings-btn')?.addEventListener('click', () => openModal(settingsModal));
+
+    for (const modal of [helpModal, settingsModal]) {
+      modal.querySelector('.modal-close')?.addEventListener('click', () => closeModal(modal));
+      modal.addEventListener('pointerdown', e => { if (e.target === modal) closeModal(modal); });
+    }
+
+    const darkThemeToggle = /** @type {HTMLInputElement | null} */ (document.getElementById('dark-theme-toggle'));
+    if (darkThemeToggle) {
+      darkThemeToggle.checked = localStorage.getItem('bg-wordle-theme') !== 'light';
+      darkThemeToggle.addEventListener('change', () => {
+        const isLight = !darkThemeToggle.checked;
+        document.documentElement.classList.toggle('light-theme', isLight);
+        localStorage.setItem('bg-wordle-theme', isLight ? 'light' : 'dark');
+      });
+    }
+  }
+
+  /**
    * @description Builds and appends all game UI elements to `document.body` — the header,
    * notification container, scoreboard, guess grid, on-screen keyboard, and both modals —
    * then returns them so the game instance and modal setup can reference them.
    * @returns {InterfaceElements} The created HTML elements.
    */
   static createInterface() {
-    const { gridLength, keys, templates } = Config;
+    const { gridLength, keys, translations } = Config;
 
-    const createDeleteKeySVG = (key) => {
-      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      svg.setAttribute('data-key', key);
-      svg.setAttribute('viewBox', '0 0 24 24');
-
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      path.setAttribute('data-key', key);
-      path.setAttribute('d', 'M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7.07L2.4 12l4.66-7H22v14zm-11.59-2L14 13.41 17.59 17 19 15.59 15.41 12 19 8.41 17.59 7 14 10.59 10.41 7 9 8.41 12.59 12 9 15.59z');
-
-      svg.appendChild(path);
-
-      return svg;
-    };
-
-    const notification = createElement('div', {
+    createElement('header', {
       parent: document.body,
-      attributes: { id: 'notification' }
+      attributes: { id: 'header' },
+      children: [
+        createElement('button', {
+          attributes: { id: 'help-btn', class: 'icon-btn', 'aria-label': translations.helpAriaLabel },
+          children: [createHelpIconSVG()],
+        }),
+        createElement('h1', { attributes: { id: 'title' }, textContent: translations.title }),
+        createElement('button', {
+          attributes: { id: 'settings-btn', class: 'icon-btn', 'aria-label': translations.settingsAriaLabel },
+          children: [createSettingsIconSVG()],
+        }),
+      ],
     });
 
     const scoreboard = createElement('div', {
@@ -113,11 +156,11 @@ export default class WordleUIController {
       children: [
         createElement('span', {
           attributes: { id: 'score' },
-          textContent: templates.score,
+          textContent: translations.score,
         }),
         createElement('span', {
           attributes: { id: 'highscore' },
-          textContent: templates.highscore,
+          textContent: translations.highscore,
         }),
       ]
     });
@@ -151,6 +194,12 @@ export default class WordleUIController {
     });
 
 
-    return { scoreboard, grid, keyboard, notification };
+    const helpModal = createHelpModal();
+    document.body.append(helpModal);
+
+    const settingsModal = createSettingsModal();
+    document.body.append(settingsModal);
+
+    return { scoreboard, grid, keyboard, notification, helpModal, settingsModal };
   }
 }

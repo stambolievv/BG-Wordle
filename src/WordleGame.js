@@ -90,7 +90,7 @@ export default class WordleGame {
   async submitGuess() {
     const {
       wordLength,
-      templates: { notEnoughLetters, noSuchWord },
+      translations: { notEnoughLetters, noSuchWord },
       delays: { betweenFlips },
     } = Config;
 
@@ -213,7 +213,7 @@ export default class WordleGame {
    */
   async #checkWinLose(guess, tiles) {
     const {
-      templates: { win, lose },
+      translations: { win, lose },
       score: { reward, penalty },
       alert: { rewardDuration, penaltyDuration },
       delays: { betweenJumps }
@@ -250,15 +250,15 @@ export default class WordleGame {
 
     if (isNil(score) || isNil(highscore)) return;
 
-    const { templates } = Config;
+    const { translations } = Config;
 
     if (this.#score > this.#highscore) {
       localStorage.setItem('bg-wordle-highscore', this.#score.toString());
       this.#highscore = this.#score;
     }
 
-    score.textContent = `${templates.score}${this.#score}`;
-    highscore.textContent = `${templates.highscore}${this.#highscore}`;
+    score.textContent = `${translations.score}${this.#score}`;
+    highscore.textContent = `${translations.highscore}${this.#highscore}`;
   }
 
   /**

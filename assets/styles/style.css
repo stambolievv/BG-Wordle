@@ -1,4 +1,6 @@
 @import 'main.css';
+@import 'header.css';
+@import 'modal.css';
 @import 'tiles.css';
 @import 'keyboard.css';
 @import 'notification.css';

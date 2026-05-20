@@ -1,0 +1,51 @@
+#header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.5em;
+  border-bottom: 1px solid var(--clr-border);
+}
+
+#title {
+  font-size: 1.8em;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--clr-tile-text);
+}
+
+.icon-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 2.5em;
+  height: 2.5em;
+  background: none;
+  border: none;
+  border-radius: 0.25em;
+  cursor: pointer;
+  color: var(--clr-tile-text);
+  transition: background-color 150ms;
+}
+
+.icon-btn:hover,
+.icon-btn:focus-visible {
+  background-color: var(--clr-border);
+}
+
+.icon-btn > svg {
+  width: 1.5em;
+  height: 1.5em;
+}
+
+#score-text {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding-block: 1em;
+
+  font-size: var(--font-size-ui);
+  color: var(--clr-score-text);
+  font-weight: bold;
+  text-transform: uppercase;
+}
