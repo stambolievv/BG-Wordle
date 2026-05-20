@@ -2,31 +2,50 @@ import WordleGame from './WordleGame';
 import { createArray, createElement, isString } from './utilities';
 import Config from './config';
 
+/**
+ * @typedef {object} InterfaceElements
+ * @property {HTMLElement} notification - Container where temporary alert messages are injected.
+ * @property {HTMLElement} scoreboard - Container that displays the current and high score.
+ * @property {HTMLElement} grid - The game grid whose `.tile` children are the letter cells.
+ * @property {HTMLElement} keyboard - The on-screen keyboard whose `.key` children are the letter buttons.
+ */
+
 export default class WordleUIController {
   /**
-   * @description Represents the Wordle game, providing the main functionality and logic.
+   * The game instance that owns all guess evaluation and scoring logic.
    * @type {WordleGame}
    */
   #game;
   /**
-   * @description The controller used to manage event listeners and abort events.
+   * Manages the active keyboard and pointer event listeners; aborted and replaced each time
+   * input must be temporarily disabled.
    * @type {AbortController}
    */
   #controller;
 
+  /**
+   * @description Builds the DOM interface, creates the game instance, enables input, and
+   * wires up the help and settings modals.
+   */
   constructor() {
     this.#game = new WordleGame(WordleUIController.createInterface());
-
     this.#controller = new AbortController();
+
     this.#toggleEventListeners(true);
   }
 
   /**
-   * @description Toggles event listeners on or off.
-   * @param {boolean} enable - Flag indicating whether to enable or disable event listeners.
+   * @description Enables or disables all keyboard and pointer event listeners. Disabling is
+   * done by aborting the current `AbortController` and creating a fresh one so the next
+   * `enable` call starts with a clean signal.
+   * @param {boolean} enable - `true` to attach listeners, `false` to remove them.
    */
   #toggleEventListeners(enable) {
-    const eventHandler = event => this.#eventHandler(event.key || event.target?.dataset?.key);
+    const eventHandler = (/** @type {KeyboardEvent | PointerEvent} */ event) =>
+      this.#eventHandler(
+        (/** @type {KeyboardEvent} */ (event)).key ||
+        (/** @type {HTMLElement | null} */ (event.target))?.dataset?.key
+      );
 
     if (enable) {
       const { signal } = this.#controller;
@@ -39,8 +58,10 @@ export default class WordleUIController {
   }
 
   /**
-   * @description Handles events actions based on the target element and updates the game accordingly.
-   * @param {string | undefined} key - The string representing the clicked, touched or pressed key.
+   * @description Dispatches a keyboard or pointer event to the appropriate game action.
+   * Input is blocked for the duration of the action to prevent overlapping animations.
+   * @param {string | undefined} key - The letter, `'Enter'`, `'Delete'`, or `'Backspace'`
+   * derived from the event; `undefined` for unrecognised targets.
    */
   async #eventHandler(key) {
     if (!isString(key)) return;
@@ -59,8 +80,10 @@ export default class WordleUIController {
   }
 
   /**
-   * @description Creates the game interface elements and returns them as an object.
-   * @returns {GameElements} The created HTML game elements.
+   * @description Builds and appends all game UI elements to `document.body` — the header,
+   * notification container, scoreboard, guess grid, on-screen keyboard, and both modals —
+   * then returns them so the game instance and modal setup can reference them.
+   * @returns {InterfaceElements} The created HTML elements.
    */
   static createInterface() {
     const { gridLength, keys, templates } = Config;
@@ -131,11 +154,3 @@ export default class WordleUIController {
     return { scoreboard, grid, keyboard, notification };
   }
 }
-
-/**
- * @typedef {object} GameElements - Represents the HTML elements used in the game.
- * @property {HTMLElement} notification - The notification element.
- * @property {HTMLElement} scoreboard - The scoreboard element.
- * @property {HTMLElement} grid - The grid element.
- * @property {HTMLElement} keyboard - The keyboard element.
- */
