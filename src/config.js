@@ -1,10 +1,10 @@
-const config = {
+export default {
   wordLength: 5,
-  girdLength: 30,
+  gridLength: 30,
   keys: [
     'Я', 'В', 'Е', 'Р', 'Т', 'Ъ', 'У', 'И', 'О', 'П', 'Ч',
     'А', 'С', 'Д', 'Ф', 'Г', 'Х', 'Й', 'К', 'Л', 'Ш', 'Щ',
-    'Enter', 'З', 'Ь', 'Ц', 'Ж', 'Б', 'Н', 'М', 'Ю', 'Delete'
+    'Enter', 'Ю', 'З', 'Ь', 'Ц', 'Ж', 'Б', 'Н', 'М', 'Delete'
   ],
   templates: {
     win: 'Браво. Ти спечели {{reward}} точки! Смело напред.',
@@ -27,5 +27,3 @@ const config = {
     penaltyDuration: 2000,
   },
 };
-
-export default config;

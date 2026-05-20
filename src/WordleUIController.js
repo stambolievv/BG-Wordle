@@ -1,6 +1,6 @@
 import WordleGame from './WordleGame';
 import { createArray, createElement, isString } from './utilities';
-import config from './config';
+import Config from './config';
 
 export default class WordleUIController {
   /**
@@ -63,7 +63,7 @@ export default class WordleUIController {
    * @returns {GameElements} The created HTML game elements.
    */
   static createInterface() {
-    const { girdLength, keys, templates } = config;
+    const { gridLength, keys, templates } = Config;
 
     const createDeleteKeySVG = (key) => {
       const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -90,11 +90,11 @@ export default class WordleUIController {
       children: [
         createElement('span', {
           attributes: { id: 'score' },
-          textContent: templates.score
+          textContent: templates.score,
         }),
         createElement('span', {
           attributes: { id: 'highscore' },
-          textContent: templates.highscore
+          textContent: templates.highscore,
         }),
       ]
     });
@@ -102,7 +102,7 @@ export default class WordleUIController {
     const grid = createElement('div', {
       parent: document.body,
       attributes: { id: 'guess-grid' },
-      children: createArray(girdLength, () => createElement('div', { attributes: { class: 'tile' } }))
+      children: createArray(gridLength, () => createElement('div', { attributes: { class: 'tile' } }))
     });
 
     const keyboard = createElement('div', {
@@ -111,15 +111,24 @@ export default class WordleUIController {
     });
 
     for (const key of keys) {
-      const content = key === 'Delete' ? { children: [createDeleteKeySVG(key)] } : { textContent: key };
+      const content = key === 'Delete'
+        ? { children: [createDeleteKeySVG(key)] }
+        : { textContent: key };
+
       createElement('button', {
         parent: keyboard,
         attributes: { class: 'key', 'data-key': key },
-        ...content
+        ...content,
       });
     }
 
-    return { notification, scoreboard, grid, keyboard };
+    const notification = createElement('div', {
+      parent: document.body,
+      attributes: { id: 'notification' }
+    });
+
+
+    return { scoreboard, grid, keyboard, notification };
   }
 }
 

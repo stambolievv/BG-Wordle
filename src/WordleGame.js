@@ -67,7 +67,7 @@ export default class WordleGame {
       wordLength,
       templates: { notEnoughLetters, noSuchWord },
       delays: { betweenFlips },
-    } = config;
+    } = Config;
 
     const activeTiles = this.#tiles.filter(tile => tile.dataset.state === 'active-spot');
     const guessedWord = activeTiles.reduce((word, tile) => word + tile.dataset.letter, '');
@@ -84,11 +84,13 @@ export default class WordleGame {
       return;
     }
 
+    const tileStates = this.#computeTileStates(activeTiles);
+
     await this.#playAnimation(activeTiles, 'flip', {
       listener: 'transitionend',
       delay: betweenFlips,
       onComplete: (tile, index, array) => {
-        this.#flipTile(tile, index);
+        this.#flipTile(tile, tileStates[index]);
 
         if (index === array.length - 1) {
           tile.addEventListener('transitionend', () => (
@@ -105,7 +107,7 @@ export default class WordleGame {
    */
   pressKey(key) {
     const activeTiles = this.#tiles.filter(tile => tile.dataset.state === 'active-spot');
-    if (activeTiles.length >= config.wordLength) return;
+    if (activeTiles.length >= Config.wordLength) return;
 
     const nextTile = this.#tiles.find(tile => isNil(tile.dataset.letter));
     if (!isNil(nextTile)) this.#setTile(nextTile, key.toLocaleUpperCase());
@@ -246,26 +248,55 @@ export default class WordleGame {
     });
   }
 
+  #computeTileStates(tiles) {
+    const guessLetters = tiles.map(tile => tile.dataset.letter ?? '');
+    const targetLetters = [...this.#targetWord];
+
+    /** @type {Array<LettersState>} */
+    const states = new Array(guessLetters.length).fill('missing-spot');
+
+    for (let i = 0; i < guessLetters.length; i++) {
+      if (guessLetters[i] === targetLetters[i]) {
+        states[i] = 'correct-spot';
+        targetLetters[i] = '';
+      }
+    }
+
+    for (let i = 0; i < guessLetters.length; i++) {
+      if (states[i] === 'correct-spot') continue;
+
+      const targetIndex = targetLetters.indexOf(guessLetters[i]);
+
+      if (targetIndex !== -1) {
+        states[i] = 'wrong-spot';
+        targetLetters[targetIndex] = '';
+      }
+    }
+
+    return states;
+  }
+
   /**
    * @description Flips the specified tile based on its letter and updates its state and corresponding key.
    * @param {HTMLElement} tile - The tile element to flip.
-   * @param {number} index - The index of the tile in the array.
+   * @param {string} state - The state to set for the tile.
    */
-  #flipTile(tile, index) {
+  #flipTile(tile, state) {
     const letter = tile.dataset.letter;
     if (isNil(letter)) return;
 
     const key = this.#keys.find(key => key.dataset.key === letter);
     if (isNil(key)) return;
 
-    if (this.#targetWord[index] === letter) {
-      tile.dataset.state = 'correct-spot';
+    tile.dataset.state = state;
+
+    if (state === 'correct-spot') {
+      key.classList.remove('wrong-spot', 'missing-spot');
       key.classList.add('correct-spot');
-    } else if (this.#targetWord.includes(letter)) {
-      tile.dataset.state = 'wrong-spot';
+    } else if (state === 'wrong-spot' && !key.classList.contains('correct-spot')) {
+      key.classList.remove('missing-spot');
       key.classList.add('wrong-spot');
-    } else {
-      tile.dataset.state = 'missing-spot';
+    } else if (!key.classList.contains('correct-spot') && !key.classList.contains('wrong-spot')) {
       key.classList.add('missing-spot');
     }
   }
