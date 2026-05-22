@@ -122,6 +122,23 @@ export default class WordleUIController {
       });
     }
 
+    const swapButtonsToggle = /** @type {HTMLInputElement | null} */ (document.getElementById('swap-buttons-toggle'));
+    if (swapButtonsToggle) {
+      swapButtonsToggle.checked = Storage.getSwapButtons();
+      swapButtonsToggle.addEventListener('change', () => {
+        Storage.setSwapButtons(swapButtonsToggle.checked);
+        const keyboard = document.getElementById('keyboard');
+        const enterBtn = keyboard?.querySelector('[data-key="Enter"]');
+        const deleteBtn = keyboard?.querySelector('[data-key="Delete"]');
+        if (enterBtn && deleteBtn) {
+          const placeholder = document.createComment('');
+          enterBtn.replaceWith(placeholder);
+          deleteBtn.replaceWith(enterBtn);
+          placeholder.replaceWith(deleteBtn);
+        }
+      });
+    }
+
     const darkThemeToggle = /** @type {HTMLInputElement | null} */ (document.getElementById('dark-theme-toggle'));
     if (darkThemeToggle) {
       darkThemeToggle.checked = Storage.getTheme() !== 'light';
@@ -141,6 +158,10 @@ export default class WordleUIController {
    */
   static createInterface() {
     const { gridLength, keys, translations } = Config;
+
+    const swappedKeys = Storage.getSwapButtons()
+      ? keys.map(k => k === 'Enter' ? 'Delete' : k === 'Delete' ? 'Enter' : k)
+      : keys;
 
     createElement('header', {
       parent: document.body,
@@ -184,7 +205,7 @@ export default class WordleUIController {
       attributes: { id: 'keyboard' },
     });
 
-    for (const key of keys) {
+    for (const key of swappedKeys) {
       const content = key === 'Delete'
         ? { children: [createDeleteKeySVG(key)] }
         : { textContent: key };

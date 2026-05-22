@@ -6,13 +6,14 @@ const KEYS = Object.freeze({
   score: 'bg-wordle-score',
   highscore: 'bg-wordle-highscore',
   hardMode: 'bg-wordle-hard-mode',
+  swapButtons: 'bg-wordle-swap-buttons',
   theme: 'bg-wordle-theme',
 });
 
 /**
  * @description Centralises all browser-storage reads and writes for the game.
  * Session-scoped data (`score`) lives in `sessionStorage` and resets when the tab is closed.
- * Persistent settings (`highscore`, `hardMode`, `theme`) live in `localStorage`.
+ * Persistent settings (`highscore`, `hardMode`, `swapButtons`, `theme`) live in `localStorage`.
  */
 export class Storage {
   /**
@@ -46,4 +47,12 @@ export class Storage {
   static getTheme() { return localStorage.getItem(KEYS.theme); }
   /** @param {string} value */
   static setTheme(value) { localStorage.setItem(KEYS.theme, value); }
+
+  /**
+   * @description Whether the Enter and Delete on-screen buttons are swapped.
+   * @returns {boolean}
+   */
+  static getSwapButtons() { return localStorage.getItem(KEYS.swapButtons) === 'true'; }
+  /** @param {boolean} value */
+  static setSwapButtons(value) { localStorage.setItem(KEYS.swapButtons, String(value)); }
 }

@@ -4,7 +4,7 @@ export default {
   keys: [
     'Я', 'В', 'Е', 'Р', 'Т', 'Ъ', 'У', 'И', 'О', 'П', 'Ч',
     'А', 'С', 'Д', 'Ф', 'Г', 'Х', 'Й', 'К', 'Л', 'Ш', 'Щ',
-    'Enter', 'Ю', 'З', 'Ь', 'Ц', 'Ж', 'Б', 'Н', 'М', 'Delete'
+    'Delete', 'Ю', 'З', 'Ь', 'Ц', 'Ж', 'Б', 'Н', 'М', 'Enter'
   ],
   translations: {
     // Alerts
@@ -41,6 +41,8 @@ export default {
     hardModeTitle: 'Труден режим',
     hardModeDesc: 'Всички разкрити подсказки трябва да се използват в следващите опити',
     darkThemeTitle: 'Тъмна тема',
+    swapButtonsTitle: 'Смяна на бутоните',
+    swapButtonsDesc: 'Разменя местата на \'Enter\' и \'Изтрий\'',
   },
   score: {
     penalty: 1,
