@@ -1,5 +1,5 @@
 import WordleGame from './WordleGame';
-import { createArray, createElement, isString } from './utilities';
+import { createArray, createElement, isString, Storage } from './utilities';
 import { createHelpIconSVG, createSettingsIconSVG, createDeleteKeySVG, createHelpModal, createSettingsModal } from './templates';
 import Config from './config';
 
@@ -31,7 +31,7 @@ export default class WordleUIController {
    * wires up the help and settings modals.
    */
   constructor() {
-    if (localStorage.getItem('bg-wordle-theme') === 'light') {
+    if (Storage.getTheme() === 'light') {
       document.documentElement.classList.add('light-theme');
     }
 
@@ -114,13 +114,21 @@ export default class WordleUIController {
       modal.addEventListener('pointerdown', e => { if (e.target === modal) closeModal(modal); });
     }
 
+    const hardModeToggle = /** @type {HTMLInputElement | null} */ (document.getElementById('hard-mode-toggle'));
+    if (hardModeToggle) {
+      hardModeToggle.checked = this.#game.hardMode;
+      hardModeToggle.addEventListener('change', () => {
+        this.#game.setHardMode(hardModeToggle.checked);
+      });
+    }
+
     const darkThemeToggle = /** @type {HTMLInputElement | null} */ (document.getElementById('dark-theme-toggle'));
     if (darkThemeToggle) {
-      darkThemeToggle.checked = localStorage.getItem('bg-wordle-theme') !== 'light';
+      darkThemeToggle.checked = Storage.getTheme() !== 'light';
       darkThemeToggle.addEventListener('change', () => {
         const isLight = !darkThemeToggle.checked;
         document.documentElement.classList.toggle('light-theme', isLight);
-        localStorage.setItem('bg-wordle-theme', isLight ? 'light' : 'dark');
+        Storage.setTheme(isLight ? 'light' : 'dark');
       });
     }
   }

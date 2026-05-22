@@ -35,7 +35,17 @@ export function createSettingsModal() {
         <span>${t.hardModeDesc}</span>
       </div>
       <label class="toggle">
-        <input type="checkbox" id="hard-mode-toggle" disabled>
+        <input type="checkbox" id="hard-mode-toggle">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      </label>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label">
+        <strong>${t.swapButtonsTitle}</strong>
+        <span>${t.swapButtonsDesc}</span>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="swap-buttons-toggle">
         <span class="toggle-track"><span class="toggle-thumb"></span></span>
       </label>
     </div>

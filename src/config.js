@@ -12,6 +12,8 @@ export default {
     lose: 'Уфф. Твоята дума беше "{{word}}". Загуби {{penalty}} точка!',
     notEnoughLetters: 'Няма достатъчно букви!',
     noSuchWord: 'Не съществува такава дума!',
+    hardModeCorrectSpot: 'Позиция {{position}} трябва да е "{{letter}}"!',
+    hardModeWrongSpot: 'Думата трябва да съдържа "{{letter}}"!',
     // Scoreboard
     score: 'Резултат: ',
     highscore: 'Най-добър резултат: ',
@@ -41,7 +43,6 @@ export default {
     darkThemeTitle: 'Тъмна тема',
   },
   score: {
-    reward: 2,
     penalty: 1,
   },
   delays: {

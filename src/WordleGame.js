@@ -1,4 +1,4 @@
-import { createElement, sampleFromArray, isArray, isNil, isString } from './utilities';
+import { createElement, sampleFromArray, isArray, isNil, isString, Storage } from './utilities';
 import dictionary from './data/dictionary';
 import Config from './config';
 
@@ -64,6 +64,18 @@ export default class WordleGame {
    * @type {number}
    */
   #highscore;
+  /**
+   * Whether hard mode is active: any revealed hint must be reused in subsequent guesses.
+   * @type {boolean}
+   */
+  #hardMode;
+  /**
+   * Hints accumulated from previously evaluated rows in the current round.
+   * `correctPositions` maps tile index -> required letter (green hints).
+   * `mustContain` is the set of letters that must appear anywhere (yellow + green hints).
+   * @type {{ correctPositions: Map<number, string>, mustContain: Set<string> }}
+   */
+  #revealedHints;
 
   /**
    * @description Wires up DOM references, builds the key lookup map, restores the high score
@@ -77,10 +89,33 @@ export default class WordleGame {
     this.#keys = Array.from(keyboard.querySelectorAll('.key'));
 
     this.#targetWord = '';
-    this.#score = 0;
-    this.#highscore = Number(localStorage.getItem('bg-wordle-highscore')) || 0;
+    this.#score = Storage.getScore();
+    this.#highscore = Storage.getHighscore();
+    this.#hardMode = Storage.getHardMode();
+
+    this.#revealedHints = {
+      correctPositions: new Map(),
+      mustContain: new Set(),
+    };
 
     this.#initialize();
+  }
+
+  /**
+   * @description Whether hard mode is currently active.
+   * @returns {boolean}
+   */
+  get hardMode() {
+    return this.#hardMode;
+  }
+
+  /**
+   * @description Enables or disables hard mode and persists the preference to localStorage.
+   * @param {boolean} enabled - `true` to enable, `false` to disable.
+   */
+  setHardMode(enabled) {
+    this.#hardMode = enabled;
+    Storage.setHardMode(enabled);
   }
 
   /**
@@ -109,7 +144,17 @@ export default class WordleGame {
       return;
     }
 
+    if (this.#hardMode) {
+      const violation = this.#checkHardModeConstraints(activeTiles, guessedWord);
+      if (violation) {
+        this.#showAlert(violation);
+        await this.#playAnimation(activeTiles, 'shake');
+        return;
+      }
+    }
+
     const tileStates = this.#computeTileStates(activeTiles);
+    this.#updateRevealedHints(activeTiles, tileStates);
 
     await this.#playAnimation(activeTiles, 'flip', {
       listener: 'transitionend',
@@ -155,13 +200,18 @@ export default class WordleGame {
     this.#updateScore();
     this.#setRandomTargetWord();
 
+    this.#revealedHints = {
+      correctPositions: new Map(),
+      mustContain: new Set(),
+    };
+
     for (const key of this.#keys) key.className = 'key';
     for (const tile of this.#tiles) this.#resetTile(tile);
   }
 
   /**
    * @description Picks a random word from the dictionary and sets it as the new target.
-   * Also logs it to the browser console — visible to anyone who opens DevTools (intentional).
+   * Also logs it to the browser console - visible to anyone who opens DevTools (intentional).
    */
   #setRandomTargetWord() {
     this.#targetWord = sampleFromArray(dictionary);
@@ -214,12 +264,21 @@ export default class WordleGame {
   async #checkWinLose(guess, tiles) {
     const {
       translations: { win, lose },
-      score: { reward, penalty },
+      score: { penalty },
       alert: { rewardDuration, penaltyDuration },
-      delays: { betweenJumps }
+      delays: { betweenJumps },
+      wordLength, gridLength,
     } = Config;
 
     if (guess === this.#targetWord) {
+      const maxGuesses = gridLength / wordLength;
+      const guessNumber = this.#tiles.filter(t =>
+        t.dataset.state === 'correct-spot' ||
+        t.dataset.state === 'wrong-spot' ||
+        t.dataset.state === 'missing-spot'
+      ).length / wordLength;
+
+      const reward = maxGuesses - guessNumber + 1;
       this.#score += reward;
 
       this.#showAlert(win.replace(/{{reward}}/, reward.toString()), rewardDuration);
@@ -252,8 +311,10 @@ export default class WordleGame {
 
     const { translations } = Config;
 
+    Storage.setScore(this.#score);
+
     if (this.#score > this.#highscore) {
-      localStorage.setItem('bg-wordle-highscore', this.#score.toString());
+      Storage.setHighscore(this.#score);
       this.#highscore = this.#score;
     }
 
@@ -284,8 +345,8 @@ export default class WordleGame {
 
   /**
    * @description Runs the standard two-pass Wordle evaluation algorithm against the current
-   * target word. Pass 1 — marks exact-position matches as `'correct-spot'` and removes those
-   * letters from the pool. Pass 2 — for each remaining tile, checks the reduced pool and
+   * target word. Pass 1 - marks exact-position matches as `'correct-spot'` and removes those
+   * letters from the pool. Pass 2 - for each remaining tile, checks the reduced pool and
    * marks as `'wrong-spot'` if found (consuming that slot), or `'missing-spot'` otherwise.
    * This ensures a single occurrence in the target never produces more than one colored result.
    * @param {Array<HTMLElement>} tiles - Active tile elements for the current row.
@@ -321,8 +382,8 @@ export default class WordleGame {
 
   /**
    * @description Applies a pre-computed `LettersState` to a tile and upgrades the matching
-   * keyboard key to the best state it has received so far (green > yellow > gray — never
-   * downgraded).
+   * keyboard key to the best state it has received so far
+   * (green > yellow > gray - never downgraded).
    * @param {HTMLElement} tile - The tile to update.
    * @param {LettersState} state - The evaluation result for this tile.
    */
@@ -347,8 +408,8 @@ export default class WordleGame {
   }
 
   /**
-   * @description Writes a letter onto a tile and marks it `'active-spot'` — the player has
-   * typed this letter but has not yet submitted the row.
+   * @description Writes a letter onto a tile and marks it `'active-spot'`
+   * when the player has typed this letter but has not yet submitted the row.
    * @param {HTMLElement} tile - The tile to populate.
    * @param {string} key - The uppercase letter to place.
    */
@@ -356,6 +417,52 @@ export default class WordleGame {
     tile.textContent = key;
     tile.dataset.letter = key;
     tile.dataset.state = 'active-spot';
+  }
+
+  /**
+   * @description Validates the guessed word against accumulated hard mode constraints.
+   * First checks exact-position requirements (green hints), then checks that all
+   * must-contain letters (yellow and green hints) appear somewhere in the guess.
+   * @param {Array<Tile>} tiles - Active tiles for the current row.
+   * @param {string} guessedWord - The word formed from those tiles.
+   * @returns {string | null} An error message if a constraint is violated, or `null` if valid.
+   */
+  #checkHardModeConstraints(tiles, guessedWord) {
+    const { translations } = Config;
+
+    for (const [position, letter] of this.#revealedHints.correctPositions) {
+      if (tiles[position].dataset.letter !== letter) {
+        return translations.hardModeCorrectSpot
+          .replace('{{position}}', (position + 1).toString())
+          .replace('{{letter}}', letter);
+      }
+    }
+
+    for (const letter of this.#revealedHints.mustContain) {
+      if (!guessedWord.includes(letter)) {
+        return translations.hardModeWrongSpot.replace('{{letter}}', letter);
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * @description Records newly revealed hints after a row is evaluated so that subsequent
+   * guesses can be checked against them in hard mode.
+   * @param {Array<Tile>} tiles - The evaluated row's tiles.
+   * @param {Array<LettersState>} states - The computed state for each tile.
+   */
+  #updateRevealedHints(tiles, states) {
+    for (let i = 0; i < tiles.length; i++) {
+      const letter = tiles[i].dataset.letter ?? '';
+      if (states[i] === 'correct-spot') {
+        this.#revealedHints.correctPositions.set(i, letter);
+        this.#revealedHints.mustContain.add(letter);
+      } else if (states[i] === 'wrong-spot') {
+        this.#revealedHints.mustContain.add(letter);
+      }
+    }
   }
 
   /**
