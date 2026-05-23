@@ -1,5 +1,6 @@
 :root {
-  --tile-size: clamp(40px, min(calc((100vw - 2em) / 5), calc((100dvh - 10.5em) / 8.1)), 100px);
+  --word-length: 5;
+  --tile-size: clamp(40px, min(calc((100vw - 2em) / var(--word-length)), calc((100dvh - 10.5em) / 8.1)), 100px);
   --font-size-ui: clamp(16px, 1em, 20px);
 
   --clr-background: hsl(240, 3%, 7%);
@@ -58,4 +59,11 @@ body {
   padding: 0.5em;
 
   background-color: var(--clr-background);
+}
+
+#main {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-height: 0;
 }

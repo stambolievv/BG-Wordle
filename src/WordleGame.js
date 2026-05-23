@@ -1,5 +1,4 @@
 import { createElement, sampleFromArray, isArray, isNil, isString, Storage } from './utilities';
-import dictionary from './data/dictionary';
 import Config from './config';
 
 /**
@@ -20,6 +19,8 @@ import Config from './config';
  * @property {HTMLElement} scoreboard - Container that displays the current and high score.
  * @property {HTMLElement} grid - The game grid whose `.tile` children are the letter cells.
  * @property {HTMLElement} keyboard - The on-screen keyboard whose `.key` children are the letter buttons.
+ * @property {Array<string>} dictionary - Sorted uppercase word list used for validation and target selection.
+ * @property {number} wordLength - Number of letters per word for this session.
  */
 /**
  * @callback AnimationCompleteCallback
@@ -65,6 +66,16 @@ export default class WordleGame {
    */
   #highscore;
   /**
+   * Sorted uppercase word list used for validation and target selection.
+   * @type {Array<string>}
+   */
+  #dictionary;
+  /**
+   * Number of letters per word for the current session.
+   * @type {number}
+   */
+  #wordLength;
+  /**
    * Whether hard mode is active: any revealed hint must be reused in subsequent guesses.
    * @type {boolean}
    */
@@ -82,15 +93,17 @@ export default class WordleGame {
    * from localStorage, and starts the first round.
    * @param {GameOptions} options - DOM containers the game needs to read and write.
    */
-  constructor({ notification, scoreboard, grid, keyboard }) {
+  constructor({ notification, scoreboard, grid, keyboard, dictionary, wordLength }) {
     this.#notification = notification;
     this.#scoreboard = scoreboard;
     this.#tiles = Array.from(grid.querySelectorAll('.tile'));
     this.#keys = Array.from(keyboard.querySelectorAll('.key'));
+    this.#dictionary = dictionary;
+    this.#wordLength = wordLength;
 
     this.#targetWord = '';
-    this.#score = Storage.getScore();
-    this.#highscore = Storage.getHighscore();
+    this.#score = Storage.getScore(wordLength);
+    this.#highscore = Storage.getHighscore(wordLength);
     this.#hardMode = Storage.getHardMode();
 
     this.#revealedHints = {
@@ -103,7 +116,7 @@ export default class WordleGame {
 
   /**
    * @description Whether hard mode is currently active.
-   * @returns {boolean}
+   * @returns {boolean} `true` if hard mode is on, `false` otherwise.
    */
   get hardMode() {
     return this.#hardMode;
@@ -124,7 +137,6 @@ export default class WordleGame {
    */
   async submitGuess() {
     const {
-      wordLength,
       translations: { notEnoughLetters, noSuchWord },
       delays: { betweenFlips },
     } = Config;
@@ -132,13 +144,13 @@ export default class WordleGame {
     const activeTiles = this.#tiles.filter(tile => tile.dataset.state === 'active-spot');
     const guessedWord = activeTiles.reduce((word, tile) => word + tile.dataset.letter, '');
 
-    if (activeTiles.length !== wordLength) {
+    if (activeTiles.length !== this.#wordLength) {
       this.#showAlert(notEnoughLetters);
       await this.#playAnimation(activeTiles, 'shake');
       return;
     }
 
-    if (!dictionary.includes(guessedWord)) {
+    if (!this.#dictionary.includes(guessedWord)) {
       this.#showAlert(noSuchWord);
       await this.#playAnimation(activeTiles, 'shake');
       return;
@@ -178,7 +190,7 @@ export default class WordleGame {
    */
   pressKey(key) {
     const activeTiles = this.#tiles.filter(tile => tile.dataset.state === 'active-spot');
-    if (activeTiles.length >= Config.wordLength) return;
+    if (activeTiles.length >= this.#wordLength) return;
 
     const nextTile = this.#tiles.find(tile => isNil(tile.dataset.letter));
     if (!isNil(nextTile)) this.#setTile(nextTile, key.toLocaleUpperCase());
@@ -214,16 +226,15 @@ export default class WordleGame {
    * Also logs it to the browser console - visible to anyone who opens DevTools (intentional).
    */
   #setRandomTargetWord() {
-    this.#targetWord = sampleFromArray(dictionary);
+    this.#targetWord = sampleFromArray(this.#dictionary);
 
+    console.groupCollapsed('Псст... искаш ли да надникнеш? 👀');
     console.info(
-      `%cДумата ти е %c"${this.#targetWord}"%c, но защо %cмамиш%c?`,
+      `%cДумата ти е %c"${this.#targetWord}"`,
       'color:orange;font-size:1.4rem',
       'color:lime;font-size:1.6rem;font-weight:bolder',
-      'color:orange;font-size:1.4rem;',
-      'color:red;font-size:1.4rem;',
-      'color:orange;font-size:1.4rem'
     );
+    console.groupEnd();
   }
 
   /**
@@ -263,26 +274,27 @@ export default class WordleGame {
    */
   async #checkWinLose(guess, tiles) {
     const {
+      maxGuesses,
       translations: { win, lose },
       score: { penalty },
       alert: { rewardDuration, penaltyDuration },
       delays: { betweenJumps },
-      wordLength, gridLength,
     } = Config;
 
     if (guess === this.#targetWord) {
-      const maxGuesses = gridLength / wordLength;
       const guessNumber = this.#tiles.filter(t =>
         t.dataset.state === 'correct-spot' ||
         t.dataset.state === 'wrong-spot' ||
         t.dataset.state === 'missing-spot'
-      ).length / wordLength;
+      ).length / this.#wordLength;
 
       const reward = maxGuesses - guessNumber + 1;
       this.#score += reward;
 
-      this.#showAlert(win.replace(/{{reward}}/, reward.toString()), rewardDuration);
-      await this.#playAnimation(tiles, 'dance', { delay: betweenJumps });
+      await Promise.all([
+        this.#showAlert(win.replace(/{{reward}}/, reward.toString()), rewardDuration),
+        this.#playAnimation(tiles, 'dance', { delay: betweenJumps }),
+      ]);
 
       this.#initialize();
       return;
@@ -311,10 +323,10 @@ export default class WordleGame {
 
     const { translations } = Config;
 
-    Storage.setScore(this.#score);
+    Storage.setScore(this.#wordLength, this.#score);
 
     if (this.#score > this.#highscore) {
-      Storage.setHighscore(this.#score);
+      Storage.setHighscore(this.#wordLength, this.#score);
       this.#highscore = this.#score;
     }
 
@@ -336,7 +348,7 @@ export default class WordleGame {
       textContent: message,
     });
 
-    this.#playAnimation([alert], 'hide', {
+    await this.#playAnimation([alert], 'hide', {
       listener: 'transitionend',
       delay: duration,
       onComplete: item => item.remove()
@@ -420,6 +432,17 @@ export default class WordleGame {
   }
 
   /**
+   * @description Clears a tile's letter, text content, and visual state, restoring it to its
+   * blank initial appearance.
+   * @param {HTMLElement} tile - The tile to blank out.
+   */
+  #resetTile(tile) {
+    tile.textContent = '';
+    delete tile.dataset.letter;
+    delete tile.dataset.state;
+  }
+
+  /**
    * @description Validates the guessed word against accumulated hard mode constraints.
    * First checks exact-position requirements (green hints), then checks that all
    * must-contain letters (yellow and green hints) appear somewhere in the guess.
@@ -463,16 +486,5 @@ export default class WordleGame {
         this.#revealedHints.mustContain.add(letter);
       }
     }
-  }
-
-  /**
-   * @description Clears a tile's letter, text content, and visual state, restoring it to its
-   * blank initial appearance.
-   * @param {HTMLElement} tile - The tile to blank out.
-   */
-  #resetTile(tile) {
-    tile.textContent = '';
-    delete tile.dataset.letter;
-    delete tile.dataset.state;
   }
 }

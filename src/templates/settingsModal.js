@@ -2,8 +2,9 @@ import { createElement } from '../utilities';
 import Config from '../config';
 
 /**
- * @description Builds the settings overlay modal and returns it detached so the
- * caller can append it to the document and wire up open/close logic.
+ * @description Returns the settings overlay detached and hidden; the caller appends it and
+ * wires the open/close interactions. Element IDs and data attributes are the shared contract
+ * with the caller's event wiring — rename any of them and the wiring breaks.
  * @returns {HTMLElement} The modal overlay element.
  */
 export function createSettingsModal() {
@@ -15,7 +16,13 @@ export function createSettingsModal() {
 
   const inner = createElement('div', {
     parent: modal,
-    attributes: { class: 'modal' },
+    attributes: {
+      class: 'modal',
+      tabindex: '-1',
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': t.settingsTitle,
+    },
     children: [
       createElement('div', {
         attributes: { class: 'modal-header' },
@@ -28,7 +35,13 @@ export function createSettingsModal() {
   });
 
   const body = createElement('div', { parent: inner, attributes: { class: 'modal-body' } });
-  body.innerHTML = `
+  body.innerHTML = /* html */ `
+    <div class="setting-row setting-row--column">
+      <strong class="setting-label">${t.wordLengthTitle}</strong>
+      <div class="word-length-picker">
+        ${Config.wordLengthOptions.map(n => `<button class="word-length-btn" data-length="${n}">${n}</button>`).join('')}
+      </div>
+    </div>
     <div class="setting-row">
       <div class="setting-label">
         <strong>${t.hardModeTitle}</strong>

@@ -37,3 +37,12 @@
 .alert.hide {
   opacity: 0;
 }
+
+.alert.retryable {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.alert.retryable:hover {
+  opacity: 0.85;
+}

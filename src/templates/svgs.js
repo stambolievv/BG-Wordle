@@ -1,6 +1,6 @@
 /**
- * @description Creates a Feather-style icon SVG for the help button.
- * @returns {SVGElement} The help question mark icon SVG element.
+ * @description Inline SVG that inherits text color from its parent, so it automatically adapts to the active theme.
+ * @returns {SVGElement} A question-mark icon ready to be appended.
  */
 export function createHelpIconSVG() {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -18,8 +18,8 @@ export function createHelpIconSVG() {
 }
 
 /**
- * @description Creates a Feather-style icon SVG for the settings button.
- * @returns {SVGElement} The settings gear icon SVG element.
+ * @description Inline SVG that inherits text color from its parent, so it automatically adapts to the active theme.
+ * @returns {SVGElement} A gear icon ready to be appended.
  */
 export function createSettingsIconSVG() {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -36,10 +36,10 @@ export function createSettingsIconSVG() {
 }
 
 /**
- * @description Creates the backspace icon SVG for the on-screen delete key.
- * Both the `<svg>` and inner `<path>` carry `data-key` so pointer events bubble correctly.
- * @param {string} key - The `data-key` value to stamp onto the element.
- * @returns {SVGElement} The delete key icon SVG element.
+ * @description Stamps `data-key` on both the root element and the inner path so event
+ * delegation picks up the correct key regardless of which child the pointer actually hits.
+ * @param {string} key - The `data-key` value to stamp onto the SVG and path.
+ * @returns {SVGElement} A backspace icon stamped with the given `data-key`.
  */
 export function createDeleteKeySVG(key) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');

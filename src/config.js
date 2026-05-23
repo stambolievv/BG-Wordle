@@ -1,15 +1,49 @@
 export default {
-  wordLength: 5,
-  gridLength: 30,
+  /** Fallback when no word-length preference has been persisted. */
+  defaultWordLength: 5,
+
+  /**
+   * Available word lengths for the settings picker and the dictionary generator.
+   * Both consumers must stay in sync - adding a length here requires generating its dictionary file.
+   */
+  wordLengthOptions: [3, 4, 5, 6, 7],
+
+  /**
+   * Base URL for dictionary JSON files.
+   * Resolves per word length as `${dictionaryPath}/{wordLength}.json`.
+   */
+  dictionaryPath: '/dictionary',
+
+  /**
+   * Maximum number of guesses allowed per round.
+   * Controls grid height and feeds the scoring formula:
+   * a correct guess on attempt N earns `maxGuesses − N + 1` points.
+   */
+  maxGuesses: 6,
+
+  /**
+   * On-screen keyboard layout in DOM render order (left-to-right, row by row).
+   * `'Delete'` renders as an SVG icon; `'Enter'` renders as plain text.
+   * When the swap-buttons setting is active, the two exchange positions -
+   * both at initial render and whenever the setting is toggled.
+   */
   keys: [
     'Я', 'В', 'Е', 'Р', 'Т', 'Ъ', 'У', 'И', 'О', 'П', 'Ч',
     'А', 'С', 'Д', 'Ф', 'Г', 'Х', 'Й', 'К', 'Л', 'Ш', 'Щ',
     'Delete', 'Ю', 'З', 'Ь', 'Ц', 'Ж', 'Б', 'Н', 'М', 'Enter'
   ],
+
+  /**
+   * All user-facing strings, so no hardcoded text lives in component or game code.
+   * Values that include runtime data use `{{placeholder}}` tokens swapped in before display.
+   * Example letter arrays for the help modal are destructured directly into the template.
+   */
   translations: {
     // Alerts
     win: 'Браво. Ти спечели {{reward}} точки! Смело напред.',
     lose: 'Уфф. Твоята дума беше "{{word}}". Загуби {{penalty}} точка!',
+    loading: 'Играта се зарежда...',
+    loadingError: 'Речникът не можа да се зареди. Натиснете тук, за да опитате отново.',
     notEnoughLetters: 'Няма достатъчно букви!',
     noSuchWord: 'Не съществува такава дума!',
     hardModeCorrectSpot: 'Позиция {{position}} трябва да е "{{letter}}"!',
@@ -21,6 +55,7 @@ export default {
     title: 'BG Wordle',
     helpAriaLabel: 'Как се играе',
     settingsAriaLabel: 'Настройки',
+    deleteAriaLabel: 'Изтрий буква',
     // Shared modal
     modalClose: 'Затвори',
     // Help modal
@@ -43,16 +78,25 @@ export default {
     darkThemeTitle: 'Тъмна тема',
     swapButtonsTitle: 'Смяна на бутоните',
     swapButtonsDesc: 'Разменя местата на \'Enter\' и \'Изтрий\'',
+    wordLengthTitle: 'Дължина на думата',
   },
+
   score: {
+    /** Deducted from score on a loss. Only applied when the current score is positive, so the displayed score never goes below zero. */
     penalty: 1,
   },
+
   delays: {
+    /** Milliseconds of stagger between consecutive tile flips during a guess reveal animation. */
     betweenFlips: 250,
+    /** Milliseconds of stagger between consecutive tile jumps during the win animation. */
     betweenJumps: 50,
   },
+
   alert: {
-    rewardDuration: 2000,
-    penaltyDuration: 2000,
+    /** How long the win notification stays visible (ms) before the auto-dismiss transition begins. */
+    rewardDuration: 2500,
+    /** How long the loss notification stays visible (ms) before the auto-dismiss transition begins. */
+    penaltyDuration: 3000,
   },
 };

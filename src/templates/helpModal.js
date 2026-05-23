@@ -2,8 +2,9 @@ import { createElement } from '../utilities';
 import Config from '../config';
 
 /**
- * @description Builds the "Как се играе" help overlay modal and returns it detached
- * so the caller can append it to the document and wire up open/close logic.
+ * @description Returns the help overlay detached and hidden; the caller appends it and
+ * wires the open/close interactions. Body content comes entirely from `Config.translations`
+ * at build time, so using `innerHTML` here carries no XSS risk.
  * @returns {HTMLElement} The modal overlay element.
  */
 export function createHelpModal() {
@@ -15,7 +16,13 @@ export function createHelpModal() {
 
   const inner = createElement('div', {
     parent: modal,
-    attributes: { class: 'modal' },
+    attributes: {
+      class: 'modal',
+      tabindex: '-1',
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': t.helpTitle,
+    },
     children: [
       createElement('div', {
         attributes: { class: 'modal-header' },
@@ -33,7 +40,7 @@ export function createHelpModal() {
   const [e2a, e2b, e2c, e2d, e2e] = t.helpExample2Letters;
   const [e3a, e3b, e3c, e3d, e3e] = t.helpExample3Letters;
 
-  body.innerHTML = `
+  body.innerHTML = /* html */ `
     <p>${t.helpRule1}</p>
     <ul>
       <li>${t.helpRule2}</li>

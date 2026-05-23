@@ -17,7 +17,8 @@
     "checkJs": true, // This is the equivalent of including // @ts-check at the top of all JavaScript files which are included in your project.
     "allowUnreachableCode": false, // This allows picking up dead code paths.
     "strictNullChecks": true, // This makes null and undefined have their own distinct types and throws a type error if they are used where a concrete value is expected.
-    "forceConsistentCasingInFileNames": true // This ensures that all file names in the project are consistently cased.
+    "forceConsistentCasingInFileNames": true, // This ensures that all file names in the project are consistently cased.
+    "types": ["vite/client"] // Adds Vite-specific globals like import.meta.glob, import.meta.env, etc.
   },
   "include": ["src/**/*.js", "test/**/*.js"],
   "exclude": ["dist", "node_modules"] // This specifies which directories should be excluded from the project.

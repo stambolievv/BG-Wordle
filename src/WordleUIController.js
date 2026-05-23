@@ -1,53 +1,66 @@
 import WordleGame from './WordleGame';
-import { createArray, createElement, isString, Storage } from './utilities';
+import { createArray, createElement, isString, Storage, loadDictionary } from './utilities';
 import { createHelpIconSVG, createSettingsIconSVG, createDeleteKeySVG, createHelpModal, createSettingsModal } from './templates';
 import Config from './config';
 
 /**
+ * Named DOM references produced once by `createInterface`.
+ * The modal elements are only needed for open/close wiring; the remaining elements
+ * are passed into the game instance and stored for rebuilds.
  * @typedef {object} InterfaceElements
- * @property {HTMLElement} notification - Container where temporary alert messages are injected.
- * @property {HTMLElement} scoreboard - Container that displays the current and high score.
- * @property {HTMLElement} grid - The game grid whose `.tile` children are the letter cells.
- * @property {HTMLElement} keyboard - The on-screen keyboard whose `.key` children are the letter buttons.
- * @property {HTMLElement} helpModal - The how-to-play overlay modal.
- * @property {HTMLElement} settingsModal - The settings overlay modal.
+ * @property {HTMLElement} notification - Container for alert messages; cleared on each new load.
+ * @property {HTMLElement} scoreboard - Displays current and high score.
+ * @property {HTMLElement} grid - The tile grid; rebuilt when word length changes.
+ * @property {HTMLElement} keyboard - The on-screen keyboard; updated with result colors after each guess.
+ * @property {HTMLElement} helpModal - How-to-play overlay.
+ * @property {HTMLElement} settingsModal - Settings overlay.
  */
 
 export default class WordleUIController {
   /**
-   * The game instance that owns all guess evaluation and scoring logic.
-   * @type {WordleGame}
+   * Null until the dictionary finishes loading; input is silently dropped until this is set.
+   * @type {WordleGame | null}
    */
-  #game;
+  #game = null;
   /**
-   * Manages the active keyboard and pointer event listeners; aborted and replaced each time
-   * input must be temporarily disabled.
+   * Aborted to cancel all listeners at once. Replaced with a fresh instance before the next re-enable.
    * @type {AbortController}
    */
   #controller;
+  /**
+   * Cached to skip redundant fetches when the user selects the same length already active.
+   * @type {number}
+   */
+  #wordLength;
+  /**
+   * Stable DOM references shared across game instances.
+   * @type {Omit<InterfaceElements, 'helpModal' | 'settingsModal'>}
+   */
+  #gameElements;
 
   /**
-   * @description Builds the DOM interface, creates the game instance, enables input, and
-   * wires up the help and settings modals.
+   * @description Applies the stored theme before building the DOM to prevent a flash,
+   * then kicks off the first dictionary load.
    */
   constructor() {
     if (Storage.getTheme() === 'light') {
       document.documentElement.classList.add('light-theme');
     }
 
-    const { helpModal, settingsModal, ...gameElements } = WordleUIController.createInterface();
+    this.#wordLength = Storage.getWordLength();
 
-    this.#game = new WordleGame(gameElements);
+    const { helpModal, settingsModal, ...gameElements } = WordleUIController.createInterface(this.#wordLength);
+    this.#gameElements = gameElements;
+
     this.#controller = new AbortController();
 
-    this.#toggleEventListeners(true);
     this.#setupModals(helpModal, settingsModal);
+    this.#load(this.#wordLength);
   }
 
   /**
-   * @description Enables or disables all keyboard and pointer event listeners. Disabling is
-   * done by aborting the current `AbortController` and creating a fresh one so the next
-   * `enable` call starts with a clean signal.
+   * @description Central switch for game input. Disabled while animations run, while the
+   * dictionary is loading, and while any modal is open.
    * @param {boolean} enable - `true` to attach listeners, `false` to remove them.
    */
   #toggleEventListeners(enable) {
@@ -68,13 +81,13 @@ export default class WordleUIController {
   }
 
   /**
-   * @description Dispatches a keyboard or pointer event to the appropriate game action.
-   * Input is blocked for the duration of the action to prevent overlapping animations.
-   * @param {string | undefined} key - The letter, `'Enter'`, `'Delete'`, or `'Backspace'`
-   * derived from the event; `undefined` for unrecognised targets.
+   * @description Unified handler for both physical keyboard and on-screen button input.
+   * Input is re-gated around each action to prevent animation overlap.
+   * @param {string | undefined} key - The letter, `'Enter'`, `'Delete'`, or `'Backspace'`;
+   * `undefined` for events that didn't originate from a recognised input source.
    */
   async #eventHandler(key) {
-    if (!isString(key)) return;
+    if (!isString(key) || !this.#game) return;
 
     this.#toggleEventListeners(false);
 
@@ -90,15 +103,88 @@ export default class WordleUIController {
   }
 
   /**
-   * @description Wires up modal open/close interactions and settings toggle handlers.
-   * Game input is disabled while any modal is open and re-enabled on close.
-   * @param {HTMLElement} helpModal - The help overlay element.
-   * @param {HTMLElement} settingsModal - The settings overlay element.
+   * @description Prepends a notification to the container and returns the element so
+   * the caller can remove or update it when ready.
+   * @param {string} message - Text to show in the notification.
+   * @returns {HTMLElement} The injected alert element.
+   */
+  #showNotification(message) {
+    return createElement('div', {
+      parent: this.#gameElements.notification,
+      prepend: true,
+      attributes: { class: 'alert' },
+      textContent: message,
+    });
+  }
+
+  /**
+   * @description On failure, the notification becomes a retry button and input stays
+   * blocked until the next successful load.
+   * @param {number} wordLength - Word length to fetch the dictionary for.
+   */
+  async #load(wordLength) {
+    this.#gameElements.notification.replaceChildren();
+    const alert = this.#showNotification(Config.translations.loading);
+
+    try {
+      const dictionary = await loadDictionary(wordLength);
+      alert.remove();
+
+      this.#game = new WordleGame({ ...this.#gameElements, dictionary, wordLength });
+      this.#toggleEventListeners(true);
+    } catch (err) {
+      alert.textContent = Config.translations.loadingError;
+      alert.classList.add('retryable');
+      alert.addEventListener('pointerdown', () => this.#load(wordLength), { once: true });
+
+      console.error('Failed to load game:', err);
+    }
+  }
+
+  /**
+   * @description Closes the modal upfront so a second tap cannot trigger another rebuild
+   * while the first fetch is still running.
+   * @param {number} newWordLength - The word length the player just selected.
+   * @param {HTMLElement} settingsModal - Closed before the fetch starts to block a second trigger.
+   */
+  async #rebuild(newWordLength, settingsModal) {
+    settingsModal.setAttribute('hidden', '');
+
+    Storage.setWordLength(newWordLength);
+    this.#wordLength = newWordLength;
+    document.documentElement.style.setProperty('--word-length', String(newWordLength));
+
+    const { grid } = this.#gameElements;
+    grid.replaceChildren(
+      ...Array.from({ length: Config.maxGuesses * newWordLength }, () =>
+        createElement('div', { attributes: { class: 'tile' } })
+      )
+    );
+
+    await this.#load(newWordLength);
+  }
+
+  /**
+   * @description Wires open/close and all settings toggle interactions. Input is blocked
+   * whenever a modal is open. The word-length picker syncs to the active length on open
+   * because the rebuild flow closes the modal before the fetch finishes.
+   * @param {HTMLElement} helpModal - The help overlay to wire.
+   * @param {HTMLElement} settingsModal - The settings overlay to wire.
    */
   #setupModals(helpModal, settingsModal) {
+    const updateWordLengthUI = () => {
+      const picker = settingsModal.querySelector('.word-length-picker');
+      if (!picker) return;
+      for (const btn of picker.querySelectorAll('.word-length-btn')) {
+        btn.classList.toggle('active', Number((/** @type {HTMLElement} */ (btn)).dataset.length) === this.#wordLength);
+      }
+    };
+
     const openModal = (/** @type {HTMLElement} */ modal) => {
       this.#toggleEventListeners(false);
+      if (modal === settingsModal) updateWordLengthUI();
       modal.removeAttribute('hidden');
+      /** @type {HTMLElement | null} */ (modal.querySelector('.modal'))?.focus();
     };
 
     const closeModal = (/** @type {HTMLElement} */ modal) => {
@@ -114,11 +200,21 @@ export default class WordleUIController {
       modal.addEventListener('pointerdown', e => { if (e.target === modal) closeModal(modal); });
     }
 
+    const picker = settingsModal.querySelector('.word-length-picker');
+    if (picker) {
+      for (const btn of picker.querySelectorAll('.word-length-btn')) {
+        btn.addEventListener('click', () => {
+          const newLength = Number((/** @type {HTMLElement} */ (btn)).dataset.length);
+          if (newLength && newLength !== this.#wordLength) this.#rebuild(newLength, settingsModal);
+        });
+      }
+    }
+
     const hardModeToggle = /** @type {HTMLInputElement | null} */ (document.getElementById('hard-mode-toggle'));
     if (hardModeToggle) {
-      hardModeToggle.checked = this.#game.hardMode;
+      hardModeToggle.checked = Storage.getHardMode();
       hardModeToggle.addEventListener('change', () => {
-        this.#game.setHardMode(hardModeToggle.checked);
+        this.#game?.setHardMode(hardModeToggle.checked);
       });
     }
 
@@ -151,13 +247,17 @@ export default class WordleUIController {
   }
 
   /**
-   * @description Builds and appends all game UI elements to `document.body` — the header,
-   * notification container, scoreboard, guess grid, on-screen keyboard, and both modals —
-   * then returns them so the game instance and modal setup can reference them.
-   * @returns {InterfaceElements} The created HTML elements.
+   * @description Called statically so the DOM can be built before the instance exists.
+   * Sets two CSS variables that drive the grid layout.
+   * @param {number} wordLength - Controls the initial grid dimensions.
+   * @returns {InterfaceElements} Named references to every persistent DOM element.
    */
-  static createInterface() {
-    const { gridLength, keys, translations } = Config;
+  static createInterface(wordLength) {
+    const { maxGuesses, keys, translations } = Config;
+    const gridLength = maxGuesses * wordLength;
+
+    document.documentElement.style.setProperty('--word-length', String(wordLength));
+    document.documentElement.style.setProperty('--max-guesses', String(maxGuesses));
 
     const swappedKeys = Storage.getSwapButtons()
       ? keys.map(k => k === 'Enter' ? 'Delete' : k === 'Delete' ? 'Enter' : k)
@@ -179,8 +279,13 @@ export default class WordleUIController {
       ],
     });
 
-    const scoreboard = createElement('div', {
+    const main = createElement('main', {
       parent: document.body,
+      attributes: { id: 'main' },
+    });
+
+    const scoreboard = createElement('div', {
+      parent: main,
       attributes: { id: 'score-text' },
       children: [
         createElement('span', {
@@ -195,33 +300,33 @@ export default class WordleUIController {
     });
 
     const grid = createElement('div', {
-      parent: document.body,
+      parent: main,
       attributes: { id: 'guess-grid' },
       children: createArray(gridLength, () => createElement('div', { attributes: { class: 'tile' } }))
     });
 
     const keyboard = createElement('div', {
-      parent: document.body,
+      parent: main,
       attributes: { id: 'keyboard' },
     });
 
     for (const key of swappedKeys) {
-      const content = key === 'Delete'
-        ? { children: [createDeleteKeySVG(key)] }
-        : { textContent: key };
-
+      const isDelete = key === 'Delete';
       createElement('button', {
         parent: keyboard,
-        attributes: { class: 'key', 'data-key': key },
-        ...content,
+        attributes: {
+          class: 'key',
+          'data-key': key,
+          ...(isDelete && { 'aria-label': translations.deleteAriaLabel }),
+        },
+        ...(isDelete ? { children: [createDeleteKeySVG(key)] } : { textContent: key }),
       });
     }
 
     const notification = createElement('div', {
-      parent: document.body,
+      parent: main,
       attributes: { id: 'notification' }
     });
-
 
     const helpModal = createHelpModal();
     document.body.append(helpModal);
