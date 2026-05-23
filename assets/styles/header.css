@@ -1,15 +1,24 @@
+:root {
+  --clr-score-text: hsl(0, 0%, 80%);
+}
+
+html.light-theme {
+  --clr-score-text: hsl(228, 20%, 30%);
+}
+
 #header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 0.5em;
+  padding-inline: 1em;
+  padding-bottom: clamp(4px, 0.6vh, 10px);
   border-bottom: 1px solid var(--clr-border);
 }
 
 #title {
-  font-size: 1.8em;
-  font-weight: bold;
-  letter-spacing: 0.1em;
+  font-size: 2em;
+  font-weight: 800;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--clr-tile-text);
 }
@@ -22,30 +31,38 @@
   height: 2.5em;
   background: none;
   border: none;
-  border-radius: 0.25em;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   color: var(--clr-tile-text);
-  transition: background-color 150ms;
+  opacity: 0.75;
+  transition: background-color 200ms ease, opacity 200ms ease;
 }
 
 .icon-btn:hover,
 .icon-btn:focus-visible {
   background-color: var(--clr-border);
+  opacity: 1;
+}
+
+.icon-btn:focus-visible {
+  outline: 2px solid var(--clr-correct-spot);
+  outline-offset: 2px;
 }
 
 .icon-btn > svg {
-  width: 1.5em;
-  height: 1.5em;
+  width: 2em;
+  height: 2em;
 }
 
 #score-text {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  padding-block: 1em;
+  padding-block: clamp(6px, 1vh, 16px);
 
   font-size: var(--font-size-ui);
   color: var(--clr-score-text);
-  font-weight: bold;
+  font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.06em;
 }

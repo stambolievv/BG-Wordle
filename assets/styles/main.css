@@ -1,38 +1,56 @@
 :root {
   --word-length: 5;
-  --tile-size: clamp(40px, min(calc((100vw - 2em) / var(--word-length)), calc((100dvh - 10.5em) / 8.1)), 100px);
-  --font-size-ui: clamp(16px, 1em, 20px);
+  --max-guesses: 6;
 
-  --clr-background: hsl(240, 3%, 7%);
-  --clr-border: hsl(240, 2%, 23%);
-  --clr-alert-bg: hsl(204, 7%, 85%);
-  --clr-alert-text: hsl(240, 3%, 7%);
+  --tile-size: clamp(
+    clamp(18px, 5vw, 44px),
+    min(
+      calc((100vw - 2em) / var(--word-length)),
+      calc((100dvh - 6em - 5vh - min(40vmin + 32px, 196px)) / var(--max-guesses))
+    ),
+    110px
+  );
 
-  --clr-keyboard: hsl(200, 1%, 51%);
-  --clr-keyboard-keys: hsl(0, 0%, 100%);
-  --clr-keyboard-hover: hsl(200, 1%, 71%);
+  --font-size-ui: clamp(15px, 1em, 20px);
+  --gap: clamp(3px, 0.4vh, 6px);
 
-  --clr-tile-text: hsl(0, 0%, 100%);
-  --clr-active-spot: hsl(200, 1%, 34%);
-  --clr-correct-spot: hsl(115, 29%, 43%);
-  --clr-wrong-spot: hsl(49, 51%, 47%);
-  --clr-missing-spot: hsl(240, 2%, 23%);
+  /* Radius scale */
+  --radius-sm: 0.4em;
+  --radius-md: 0.65em;
+  --radius-lg: 0.85em;
+  --radius-pill: 100px;
 
-  --clr-score-text: hsl(0, 0%, 100%);
+  /* Dark theme (default) */
+  --clr-background: hsl(228, 20%, 8%);
+  --clr-surface: hsl(228, 18%, 12%);
+  --clr-border: hsl(228, 14%, 22%);
+  --clr-keyboard: hsl(228, 12%, 48%);
+  --clr-keyboard-keys: hsl(0, 0%, 96%);
+  --clr-keyboard-hover: hsl(228, 12%, 48%);
+  --clr-tile-text: hsl(0, 0%, 96%);
+  --clr-correct-spot: hsl(142, 50%, 42%);
+  --clr-wrong-spot: hsl(50, 69%, 48%);
+  --clr-missing-spot: hsl(228, 10%, 26%);
+
+  /* Shadow scale */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 html.light-theme {
   color-scheme: only light;
-  --clr-background: hsl(0, 0%, 100%);
-  --clr-border: hsl(215, 14%, 84%);
-  --clr-alert-bg: hsl(240, 3%, 15%);
-  --clr-alert-text: hsl(0, 0%, 100%);
-  --clr-keyboard: hsl(215, 14%, 84%);
-  --clr-keyboard-keys: hsl(240, 2%, 20%);
-  --clr-keyboard-hover: hsl(215, 14%, 72%);
-  --clr-tile-text: hsl(240, 2%, 10%);
-  --clr-active-spot: hsl(215, 14%, 72%);
-  --clr-score-text: hsl(240, 2%, 10%);
+  --clr-background: hsl(220, 20%, 97%);
+  --clr-surface: hsl(0, 0%, 100%);
+  --clr-border: hsl(220, 15%, 83%);
+  --clr-keyboard: hsl(220, 12%, 82%);
+  --clr-keyboard-keys: hsl(228, 25%, 16%);
+  --clr-keyboard-hover: hsl(220, 12%, 70%);
+  --clr-tile-text: hsl(228, 20%, 12%);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.14), 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 *,
@@ -41,24 +59,30 @@ html.light-theme {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: Arial;
+  font-family: "Rubik", Arial, sans-serif;
   user-select: none;
 }
 
 html {
   color-scheme: only dark;
-  font-size: clamp(8px, min(2.877vw, 2.326dvh), 24px);
+  font-size: clamp(8px, min(2.877vw, 2.326vh), 24px);
 }
 
 body {
   display: flex;
   flex-direction: column;
 
+  height: 100vh;
   height: 100dvh;
-  margin: 0;
-  padding: 0.5em;
+  padding: clamp(4px, 0.8vh, 10px);
 
   background-color: var(--clr-background);
+
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-overflow-scrolling: touch;
+  text-rendering: optimizeLegibility;
+  text-decoration-skip: objects;
 }
 
 #main {

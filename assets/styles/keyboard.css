@@ -1,11 +1,13 @@
 #keyboard {
   display: grid;
+  flex-shrink: 0;
   grid-template-columns: repeat(22, minmax(auto, 1.25em));
-  grid-auto-rows: calc(var(--tile-size) * 0.7);
-  gap: 0.25em;
+  grid-auto-rows: clamp(34px, 13vmin, 54px);
+  gap: var(--gap);
   justify-content: center;
-  padding-block: 0.5em;
-  padding-top: 1em;
+
+  padding-top: clamp(6px, 1.2vh, 16px);
+  padding-bottom: clamp(4px, 0.6vh, 10px);
 }
 
 .key {
@@ -14,18 +16,22 @@
   align-items: center;
   grid-column: span 2;
 
-  padding: 0;
-
-  font-size: inherit;
+  font-size: clamp(14px, 2.2vh, 1.2em);
+  font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.02em;
   color: var(--clr-keyboard-keys);
   fill: var(--clr-keyboard-keys);
   background-color: var(--clr-keyboard);
 
   border: none;
-  border-radius: 0.25em;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   user-select: none;
+
+  -webkit-tap-highlight-color: color-mix(in srgb, currentColor 20%, transparent);
+  box-shadow: var(--shadow-sm);
+  transition: background-color 150ms ease, box-shadow 150ms ease;
 }
 
 .key[data-key="Enter"],
@@ -38,16 +44,24 @@
   height: 1.75em;
 }
 
-.key:active,
 .key:hover,
 .key:focus-visible {
   background-color: var(--clr-keyboard-hover);
 }
 
+.key:focus-visible {
+  outline: 2px solid var(--clr-correct-spot);
+  outline-offset: 2px;
+}
+
+.key:active {
+  animation: key-pop 200ms ease-out;
+}
+
 .key.missing-spot {
   background-color: var(--clr-missing-spot);
-  color: hsl(0, 0%, 100%);
-  fill: hsl(0, 0%, 100%);
+  color: hsl(0, 0%, 97%);
+  fill: hsl(0, 0%, 97%);
 }
 
 .key.wrong-spot {
@@ -60,6 +74,20 @@
   background-color: var(--clr-correct-spot);
   color: hsl(0, 0%, 100%);
   fill: hsl(0, 0%, 100%);
+}
+
+@keyframes key-pop {
+  0% {
+    transform: scale(1);
+  }
+
+  35% {
+    transform: scale(1.12);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 @media (hover: none) {

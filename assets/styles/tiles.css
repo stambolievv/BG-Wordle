@@ -1,11 +1,22 @@
+:root {
+  --clr-active-spot: hsl(228, 20%, 52%);
+}
+
+html.light-theme {
+  --clr-active-spot: hsl(220, 20%, 55%);
+}
+
 #guess-grid {
+  flex-grow: 1;
+  min-height: 0;
+
   display: grid;
   justify-content: center;
   align-content: center;
-  flex-grow: 1;
+
   grid-template-columns: repeat(var(--word-length, 5), var(--tile-size));
   grid-template-rows: repeat(var(--max-guesses, 6), var(--tile-size));
-  gap: 0.25em;
+  gap: var(--gap);
 }
 
 .tile {
@@ -14,11 +25,12 @@
   align-items: center;
 
   font-size: calc(var(--tile-size) * 0.5);
-  font-weight: bold;
+  font-weight: 700;
   text-transform: uppercase;
   color: var(--clr-tile-text);
 
   border: 0.05em solid var(--clr-border);
+  border-radius: 0.12em;
 
   transition: transform 250ms linear;
 }

@@ -1,3 +1,13 @@
+:root {
+  --clr-alert-bg: hsl(228, 15%, 90%);
+  --clr-alert-text: hsl(228, 20%, 12%);
+}
+
+html.light-theme {
+  --clr-alert-bg: hsl(228, 20%, 15%);
+  --clr-alert-text: hsl(0, 0%, 97%);
+}
+
 #notification {
   display: flex;
   flex-direction: column;
@@ -12,19 +22,22 @@
 }
 
 .alert {
-  padding: 1.5em;
-  margin-bottom: 0.5em;
+  padding: 0.7em 1.4em;
+  margin-bottom: 0.4em;
 
   background-color: var(--clr-alert-bg);
   color: var(--clr-alert-text);
   opacity: 1;
 
   font-size: var(--font-size-ui);
-  font-weight: bold;
+  font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
   text-align: center;
+  white-space: nowrap;
 
-  border-radius: 0.25em;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-md);
   pointer-events: none;
 
   transition: opacity 500ms ease-in-out;
