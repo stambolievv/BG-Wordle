@@ -106,6 +106,7 @@ export class Storage {
       return null;
     }
   }
+
   /**
    * @description Writes a word list to the cache for future loads.
    * @param {Array<string>} dictionary - The filtered word list to cache.

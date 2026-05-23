@@ -253,7 +253,7 @@ export default class WordleGame {
 
     if (!isArray(items) || !isString(animation)) return;
 
-    await Promise.all(items.map((item, index, array) => new Promise(resolve => {
+    await Promise.all(items.map((item, index, array) => new Promise((resolve) => {
       setTimeout(() => {
         item.classList.add(animation);
         item.addEventListener(listener, () => {
@@ -283,9 +283,9 @@ export default class WordleGame {
 
     if (guess === this.#targetWord) {
       const guessNumber = this.#tiles.filter(t =>
-        t.dataset.state === 'correct-spot' ||
-        t.dataset.state === 'wrong-spot' ||
-        t.dataset.state === 'missing-spot'
+        t.dataset.state === 'correct-spot'
+        || t.dataset.state === 'wrong-spot'
+        || t.dataset.state === 'missing-spot'
       ).length / this.#wordLength;
 
       const reward = maxGuesses - guessNumber + 1;

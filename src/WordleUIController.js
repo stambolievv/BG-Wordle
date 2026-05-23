@@ -66,8 +66,8 @@ export default class WordleUIController {
   #toggleEventListeners(enable) {
     const eventHandler = (/** @type {KeyboardEvent | PointerEvent} */ event) =>
       this.#eventHandler(
-        (/** @type {KeyboardEvent} */ (event)).key ||
-        (/** @type {HTMLElement | null} */ (event.target))?.dataset?.key
+        (/** @type {KeyboardEvent} */ (event)).key
+        || (/** @type {HTMLElement | null} */ (event.target))?.dataset?.key
       );
 
     if (enable) {
@@ -197,7 +197,7 @@ export default class WordleUIController {
 
     for (const modal of [helpModal, settingsModal]) {
       modal.querySelector('.modal-close')?.addEventListener('click', () => closeModal(modal));
-      modal.addEventListener('pointerdown', e => { if (e.target === modal) closeModal(modal); });
+      modal.addEventListener('pointerdown', e => e.target === modal && closeModal(modal));
     }
 
     const picker = settingsModal.querySelector('.word-length-picker');

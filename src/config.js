@@ -12,7 +12,7 @@ export default {
    * Base URL for dictionary JSON files.
    * Resolves per word length as `${dictionaryPath}/{wordLength}.json`.
    */
-  dictionaryPath: '/dictionary',
+  dictionaryPath: `${import.meta.env.BASE_URL}dictionary`,
 
   /**
    * Maximum number of guesses allowed per round.
