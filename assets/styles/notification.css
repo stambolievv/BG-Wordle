@@ -1,11 +1,11 @@
 :root {
-  --clr-alert-bg: hsl(228, 15%, 90%);
-  --clr-alert-text: hsl(228, 20%, 12%);
-}
-
-html.light-theme {
   --clr-alert-bg: hsl(228, 20%, 15%);
   --clr-alert-text: hsl(0, 0%, 97%);
+}
+
+html[data-theme="light"] {
+  --clr-alert-bg: hsl(228, 15%, 90%);
+  --clr-alert-text: hsl(228, 20%, 12%);
 }
 
 #notification {

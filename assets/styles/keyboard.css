@@ -3,11 +3,10 @@
   flex-shrink: 0;
   grid-template-columns: repeat(22, minmax(auto, 1.25em));
   grid-auto-rows: clamp(34px, 13vmin, 54px);
-  gap: var(--gap);
+  gap: calc(var(--gap) * 1.5);
   justify-content: center;
 
-  padding-top: clamp(6px, 1.2vh, 16px);
-  padding-bottom: clamp(4px, 0.6vh, 10px);
+  padding-block: clamp(6px, 1.2vh, 16px);
 }
 
 .key {

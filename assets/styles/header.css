@@ -2,7 +2,7 @@
   --clr-score-text: hsl(0, 0%, 80%);
 }
 
-html.light-theme {
+html[data-theme="light"] {
   --clr-score-text: hsl(228, 20%, 30%);
 }
 

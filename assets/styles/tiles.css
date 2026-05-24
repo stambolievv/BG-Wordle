@@ -2,7 +2,7 @@
   --clr-active-spot: hsl(228, 20%, 52%);
 }
 
-html.light-theme {
+html[data-theme="light"] {
   --clr-active-spot: hsl(220, 20%, 55%);
 }
 

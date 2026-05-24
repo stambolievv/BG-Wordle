@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { defineConfig } from 'vite';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import { createHtmlPlugin } from 'vite-plugin-html';
@@ -56,5 +58,46 @@ export default defineConfig({
     viteBanner({ content: banner }),
     viteStaticCopy({ targets: [{ src: 'assets/images', dest: './assets', overwrite: false }] }),
     createHtmlPlugin({ minify: true, inject: { data: { BASE_URL: process.env.BASE_URL } } }),
+    injectBaseUrl(),
   ]
 });
+
+/**
+ * Replaces `<%- BASE_URL %>` (and `<%= %>` / whitespace variants) in copied
+ * text assets after the static-copy step. Binary files are skipped.
+ * @returns {import('vite').PluginOption}
+ */
+function injectBaseUrl() {
+  let outDir;
+
+  return {
+    name: 'inject-base-url',
+    apply: 'build',
+    configResolved(config) {
+      outDir = path.resolve(config.root, config.build.outDir);
+    },
+    closeBundle() {
+      const pattern = /<%[-=]?\s*BASE_URL\s*%>/g;
+
+      const walk = (dir) => {
+        for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+          const full = path.join(dir, entry.name);
+
+          if (entry.isDirectory()) {
+            walk(full);
+            continue;
+          }
+
+          const buf = fs.readFileSync(full);
+          if (buf.includes(0)) continue; // null byte = binary, skip
+
+          const text = buf.toString('utf-8');
+          const replaced = text.replace(pattern, process.env.BASE_URL);
+          if (replaced !== text) fs.writeFileSync(full, replaced);
+        }
+      };
+
+      walk(outDir);
+    },
+  };
+}

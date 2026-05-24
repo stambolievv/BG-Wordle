@@ -43,9 +43,8 @@ export default class WordleUIController {
    * then kicks off the first dictionary load.
    */
   constructor() {
-    if (Storage.getTheme() === 'light') {
-      document.documentElement.classList.add('light-theme');
-    }
+    document.documentElement.dataset.theme = Storage.getTheme();
+    WordleUIController.#updateThemeColor();
 
     this.#wordLength = Storage.getWordLength();
 
@@ -213,6 +212,7 @@ export default class WordleUIController {
     const hardModeToggle = /** @type {HTMLInputElement | null} */ (document.getElementById('hard-mode-toggle'));
     if (hardModeToggle) {
       hardModeToggle.checked = Storage.getHardMode();
+
       hardModeToggle.addEventListener('change', () => {
         this.#game?.setHardMode(hardModeToggle.checked);
       });
@@ -221,11 +221,14 @@ export default class WordleUIController {
     const swapButtonsToggle = /** @type {HTMLInputElement | null} */ (document.getElementById('swap-buttons-toggle'));
     if (swapButtonsToggle) {
       swapButtonsToggle.checked = Storage.getSwapButtons();
+
       swapButtonsToggle.addEventListener('change', () => {
         Storage.setSwapButtons(swapButtonsToggle.checked);
+
         const keyboard = document.getElementById('keyboard');
         const enterBtn = keyboard?.querySelector('[data-key="Enter"]');
         const deleteBtn = keyboard?.querySelector('[data-key="Delete"]');
+
         if (enterBtn && deleteBtn) {
           const placeholder = document.createComment('');
           enterBtn.replaceWith(placeholder);
@@ -237,12 +240,40 @@ export default class WordleUIController {
 
     const darkThemeToggle = /** @type {HTMLInputElement | null} */ (document.getElementById('dark-theme-toggle'));
     if (darkThemeToggle) {
-      darkThemeToggle.checked = Storage.getTheme() !== 'light';
+      const { theme } = document.documentElement.dataset;
+
+      darkThemeToggle.checked = theme === 'dark'
+        || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ({ matches }) => {
+        if (Storage.hasThemePreference()) return;
+
+        document.documentElement.dataset.theme = matches ? 'dark' : 'light';
+        darkThemeToggle.checked = matches;
+        WordleUIController.#updateThemeColor();
+      });
+
       darkThemeToggle.addEventListener('change', () => {
         const isLight = !darkThemeToggle.checked;
-        document.documentElement.classList.toggle('light-theme', isLight);
-        Storage.setTheme(isLight ? 'light' : 'dark');
+        const theme = isLight ? 'light' : 'dark';
+
+        document.documentElement.dataset.theme = theme;
+        Storage.setTheme(theme);
+        WordleUIController.#updateThemeColor();
       });
+    }
+  }
+
+  /**
+   * @description Reads the resolved background color from the computed style and writes it
+   * to every `<meta name="theme-color">` tag so the browser chrome stays in sync with
+   * the active theme. Must be called after `data-theme` is applied to `<html>`.
+   */
+  static #updateThemeColor() {
+    const color = getComputedStyle(document.body).backgroundColor;
+
+    for (const meta of document.querySelectorAll('meta[name="theme-color"]')) {
+      meta.setAttribute('content', color);
     }
   }
 
