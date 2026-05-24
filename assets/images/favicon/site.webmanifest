@@ -16,7 +16,7 @@
 
         }
     ],
-    "start_url": "/",
+    "start_url": "/BG-Wordle/",
     "theme_color": "#57ac57",
     "background_color": "#57ac57",
     "display": "standalone"
