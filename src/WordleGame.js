@@ -14,6 +14,11 @@ import Config from './config';
  * A single cell in the guess grid, which holds a letter and a state that determines its color.
  */
 /**
+ * @typedef {HTMLElement & { dataset: { key: string } }} Key
+ * A single button on the on-screen keyboard, identified by its `data-key` attribute which holds
+ * the letter, `'Enter'`, or `'Delete'` value it represents.
+ */
+/**
  * @typedef {object} GameOptions
  * @property {HTMLElement} notification - Container where temporary alert messages are injected.
  * @property {HTMLElement} scoreboard - Container that displays the current and high score.
@@ -23,10 +28,11 @@ import Config from './config';
  * @property {number} wordLength - Number of letters per word for this session.
  */
 /**
+ * @template T
  * @callback AnimationCompleteCallback
- * @param {HTMLElement} item - The element whose animation just completed.
+ * @param {T} item - The element whose animation just completed.
  * @param {number} index - Its position in the animated items array.
- * @param {Array<HTMLElement>} array - The full array of animated items.
+ * @param {Array<T>} array - The full array of animated items.
  */
 
 export default class WordleGame {
@@ -47,9 +53,14 @@ export default class WordleGame {
   #tiles;
   /**
    * All key elements on the on-screen keyboard.
-   * @type {Array<HTMLElement>}
+   * @type {Array<Key>}
    */
   #keys;
+  /**
+   * Lookup map from key label (e.g. `'А'`, `'Enter'`, `'Delete'`) to its button element.
+   * @type {Map<string, Key>}
+   */
+  #keysByLabel;
   /**
    * The secret word the player must guess, always uppercase.
    * @type {string}
@@ -98,6 +109,7 @@ export default class WordleGame {
     this.#scoreboard = scoreboard;
     this.#tiles = Array.from(grid.querySelectorAll('.tile'));
     this.#keys = Array.from(keyboard.querySelectorAll('.key'));
+    this.#keysByLabel = new Map(this.#keys.map(k => [k.dataset.key, k]));
     this.#dictionary = dictionary;
     this.#wordLength = wordLength;
 
@@ -241,12 +253,13 @@ export default class WordleGame {
    * @description Adds `animation` as a CSS class to each item with an optional stagger delay,
    * waits for the specified DOM event on each item, then removes the class. Resolves once
    * every item has finished its animation.
-   * @param {Array<HTMLElement>} items - Elements to animate.
+   * @template {HTMLElement} T
+   * @param {Array<T>} items - Elements to animate.
    * @param {string} animation - CSS class name to add and then remove.
    * @param {object} [options] - Timing and callback configuration.
    * @param {string} [options.listener] - DOM event name to await on each element (default: `'animationend'`).
    * @param {number} [options.delay] - Stagger gap in ms between consecutive item animations (default: `0`).
-   * @param {AnimationCompleteCallback} [options.onComplete] - Invoked for each element after its animation event fires.
+   * @param {AnimationCompleteCallback<T>} [options.onComplete] - Invoked for each element after its animation event fires.
    */
   async #playAnimation(items, animation, options = {}) {
     const { listener = 'animationend', delay = 0, onComplete = () => { } } = options;
@@ -270,29 +283,30 @@ export default class WordleGame {
    * starts a new round on a correct guess; deducts points and ends the game if all six rows
    * are used up.
    * @param {string} guess - The word the player just submitted.
-   * @param {Array<HTMLElement>} tiles - The row of tiles that was just revealed.
+   * @param {Array<Tile>} tiles - The row of tiles that was just revealed.
    */
   async #checkWinLose(guess, tiles) {
     const {
       maxGuesses,
-      translations: { win, lose },
+      translations: { win, lose, points },
       score: { penalty },
       alert: { rewardDuration, penaltyDuration },
       delays: { betweenJumps },
     } = Config;
 
     if (guess === this.#targetWord) {
-      const guessNumber = this.#tiles.filter(t =>
-        t.dataset.state === 'correct-spot'
-        || t.dataset.state === 'wrong-spot'
-        || t.dataset.state === 'missing-spot'
-      ).length / this.#wordLength;
+      const guessNumber = this.#tiles.indexOf(tiles[0]) / this.#wordLength + 1;
 
       const reward = maxGuesses - guessNumber + 1;
       this.#score += reward;
 
       await Promise.all([
-        this.#showAlert(win.replace(/{{reward}}/, reward.toString()), rewardDuration),
+        this.#showAlert(
+          win
+            .replace('{{reward}}', String(reward))
+            .replace('{{points}}', points[reward === 1 ? 0 : 1]),
+          rewardDuration
+        ),
         this.#playAnimation(tiles, 'dance', { delay: betweenJumps }),
       ]);
 
@@ -304,7 +318,13 @@ export default class WordleGame {
     if (isGridFull) {
       if (this.#score > 0) this.#score -= penalty;
 
-      await this.#showAlert(lose.replace(/{{word}}/, this.#targetWord).replace(/{{penalty}}/g, penalty.toString()), penaltyDuration);
+      await this.#showAlert(
+        lose
+          .replace('{{word}}', this.#targetWord)
+          .replace('{{penalty}}', String(penalty))
+          .replace('{{points}}', points[penalty === 1 ? 0 : 1]),
+        penaltyDuration
+      );
 
       this.#initialize();
       return;
@@ -361,7 +381,7 @@ export default class WordleGame {
    * letters from the pool. Pass 2 - for each remaining tile, checks the reduced pool and
    * marks as `'wrong-spot'` if found (consuming that slot), or `'missing-spot'` otherwise.
    * This ensures a single occurrence in the target never produces more than one colored result.
-   * @param {Array<HTMLElement>} tiles - Active tile elements for the current row.
+   * @param {Array<Tile>} tiles - Active tile elements for the current row.
    * @returns {Array<LettersState>} One state per tile, in the same order.
    */
   #computeTileStates(tiles) {
@@ -396,14 +416,14 @@ export default class WordleGame {
    * @description Applies a pre-computed `LettersState` to a tile and upgrades the matching
    * keyboard key to the best state it has received so far
    * (green > yellow > gray - never downgraded).
-   * @param {HTMLElement} tile - The tile to update.
+   * @param {Tile} tile - The tile to update.
    * @param {LettersState} state - The evaluation result for this tile.
    */
   #flipTile(tile, state) {
     const letter = tile.dataset.letter;
     if (isNil(letter)) return;
 
-    const key = this.#keys.find(key => key.dataset.key === letter);
+    const key = this.#keysByLabel.get(letter);
     if (isNil(key)) return;
 
     tile.dataset.state = state;

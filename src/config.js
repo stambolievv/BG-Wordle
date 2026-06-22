@@ -39,9 +39,10 @@ export default {
    * Example letter arrays for the help modal are destructured directly into the template.
    */
   translations: {
-    // Alerts
-    win: 'Браво. Ти спечели {{reward}} точки! Смело напред.',
-    lose: 'Уфф. Твоята дума беше "{{word}}". Загуби {{penalty}} точка!',
+    // Toasts
+    win: 'Браво! Ти спечели {{reward}} {{points}}. Смело напред!',
+    lose: 'Уфф... Твоята дума беше "{{word}}". Загуби {{penalty}} {{points}}!',
+    points: ['точка', 'точки'],
     loading: 'Играта се зарежда...',
     loadingError: 'Речникът не можа да се зареди. Натиснете тук, за да опитате отново.',
     notEnoughLetters: 'Няма достатъчно букви!',

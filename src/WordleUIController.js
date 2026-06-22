@@ -153,8 +153,7 @@ export default class WordleUIController {
     this.#wordLength = newWordLength;
     document.documentElement.style.setProperty('--word-length', String(newWordLength));
 
-    const { grid } = this.#gameElements;
-    grid.replaceChildren(
+    this.#gameElements.grid.replaceChildren(
       ...Array.from({ length: Config.maxGuesses * newWordLength }, () =>
         createElement('div', { attributes: { class: 'tile' } })
       )
@@ -171,15 +170,19 @@ export default class WordleUIController {
    * @param {HTMLElement} settingsModal - The settings overlay to wire.
    */
   #setupModals(helpModal, settingsModal) {
+    const lengthBtns = /** @type {NodeListOf<HTMLElement>} */ (settingsModal.querySelectorAll('.word-length-btn'));
+
     const updateWordLengthUI = () => {
-      const picker = settingsModal.querySelector('.word-length-picker');
-      if (!picker) return;
-      for (const btn of picker.querySelectorAll('.word-length-btn')) {
-        btn.classList.toggle('active', Number((/** @type {HTMLElement} */ (btn)).dataset.length) === this.#wordLength);
+      for (const btn of lengthBtns) {
+        btn.classList.toggle('active', Number(btn.dataset.length) === this.#wordLength);
       }
     };
 
+    /** @type {HTMLElement | null} */
+    let lastFocused = null;
+
     const openModal = (/** @type {HTMLElement} */ modal) => {
+      lastFocused = /** @type {HTMLElement | null} */ (document.activeElement);
       this.#toggleEventListeners(false);
       if (modal === settingsModal) updateWordLengthUI();
       modal.removeAttribute('hidden');
@@ -189,6 +192,8 @@ export default class WordleUIController {
     const closeModal = (/** @type {HTMLElement} */ modal) => {
       modal.setAttribute('hidden', '');
       this.#toggleEventListeners(true);
+      lastFocused?.focus();
+      lastFocused = null;
     };
 
     document.getElementById('help-btn')?.addEventListener('click', () => openModal(helpModal));
@@ -197,16 +202,30 @@ export default class WordleUIController {
     for (const modal of [helpModal, settingsModal]) {
       modal.querySelector('.modal-close')?.addEventListener('click', () => closeModal(modal));
       modal.addEventListener('pointerdown', e => e.target === modal && closeModal(modal));
+      modal.addEventListener('keydown', e => {
+        if (e.key === 'Escape') return closeModal(modal);
+        if (e.key !== 'Tab') return;
+
+        const focusable = /** @type {Array<HTMLElement>} */ (Array.from(
+          modal.querySelectorAll('button:not([disabled]), input:not([disabled])')
+        ));
+        if (!focusable.length) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey ? document.activeElement === first : document.activeElement === last) {
+          e.preventDefault();
+          (e.shiftKey ? last : first).focus();
+        }
+      });
     }
 
-    const picker = settingsModal.querySelector('.word-length-picker');
-    if (picker) {
-      for (const btn of picker.querySelectorAll('.word-length-btn')) {
-        btn.addEventListener('click', () => {
-          const newLength = Number((/** @type {HTMLElement} */ (btn)).dataset.length);
-          if (newLength && newLength !== this.#wordLength) this.#rebuild(newLength, settingsModal);
-        });
-      }
+    for (const btn of lengthBtns) {
+      btn.addEventListener('click', () => {
+        const newLength = Number(btn.dataset.length);
+        if (newLength && newLength !== this.#wordLength) this.#rebuild(newLength, settingsModal);
+      });
     }
 
     const hardModeToggle = /** @type {HTMLInputElement | null} */ (document.getElementById('hard-mode-toggle'));
@@ -225,9 +244,9 @@ export default class WordleUIController {
       swapButtonsToggle.addEventListener('change', () => {
         Storage.setSwapButtons(swapButtonsToggle.checked);
 
-        const keyboard = document.getElementById('keyboard');
-        const enterBtn = keyboard?.querySelector('[data-key="Enter"]');
-        const deleteBtn = keyboard?.querySelector('[data-key="Delete"]');
+        const { keyboard } = this.#gameElements;
+        const enterBtn = keyboard.querySelector('[data-key="Enter"]');
+        const deleteBtn = keyboard.querySelector('[data-key="Delete"]');
 
         if (enterBtn && deleteBtn) {
           const placeholder = document.createComment('');
@@ -356,7 +375,7 @@ export default class WordleUIController {
 
     const notification = createElement('div', {
       parent: main,
-      attributes: { id: 'notification' }
+      attributes: { id: 'notification', 'aria-live': 'assertive', 'aria-atomic': 'true' }
     });
 
     const helpModal = createHelpModal();
