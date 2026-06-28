@@ -26,8 +26,8 @@
   --clr-keyboard-keys: hsl(0, 0%, 96%);
   --clr-keyboard-hover: hsl(228, 12%, 48%);
   --clr-tile-text: hsl(0, 0%, 96%);
-  --clr-correct-spot: hsl(142, 50%, 42%);
-  --clr-wrong-spot: hsl(50, 69%, 48%);
+  --clr-correct-spot: hsl(142, 52%, 50%);
+  --clr-wrong-spot: hsl(50, 72%, 54%);
   --clr-missing-spot: hsl(228, 10%, 26%);
 
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
@@ -60,6 +60,8 @@ html[data-theme="light"] {
   --clr-keyboard-keys: hsl(228, 25%, 16%);
   --clr-keyboard-hover: hsl(220, 12%, 70%);
   --clr-tile-text: hsl(228, 20%, 12%);
+  --clr-correct-spot: hsl(142, 50%, 42%);
+  --clr-wrong-spot: hsl(50, 69%, 48%);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
   --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.15);

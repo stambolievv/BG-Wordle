@@ -15,10 +15,11 @@ html[data-theme="light"] {
   position: fixed;
 
   top: 10vh;
-  left: 50vw;
+  left: 50%;
   z-index: 1;
 
   transform: translateX(-50%);
+  width: calc(100vw - 2rem);
 }
 
 .alert {
@@ -34,7 +35,7 @@ html[data-theme="light"] {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   text-align: center;
-  white-space: nowrap;
+  white-space: normal;
 
   border-radius: var(--radius-pill);
   box-shadow: var(--shadow-md);
@@ -58,4 +59,8 @@ html[data-theme="light"] {
 
 .alert.retryable:hover {
   opacity: 0.85;
+}
+
+.alert .alert-word {
+  color: var(--clr-wrong-spot);
 }

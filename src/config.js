@@ -40,8 +40,8 @@ export default {
    */
   translations: {
     // Toasts
-    win: 'Браво! Ти спечели {{reward}} {{points}}. Смело напред!',
-    lose: 'Уфф... Твоята дума беше "{{word}}". Загуби {{penalty}} {{points}}!',
+    win: 'Браво! Ти спечели {{value}} {{points}}. Смело напред!',
+    lose: 'Уфф... Твоята дума беше <span class="alert-word">{{word}}</span>. Загуби {{value}} {{points}}!',
     points: ['точка', 'точки'],
     loading: 'Играта се зарежда...',
     loadingError: 'Речникът не можа да се зареди. Натиснете тук, за да опитате отново.',

@@ -303,7 +303,7 @@ export default class WordleGame {
       await Promise.all([
         this.#showAlert(
           win
-            .replace('{{reward}}', String(reward))
+            .replace('{{value}}', String(reward))
             .replace('{{points}}', points[reward === 1 ? 0 : 1]),
           rewardDuration
         ),
@@ -321,7 +321,7 @@ export default class WordleGame {
       await this.#showAlert(
         lose
           .replace('{{word}}', this.#targetWord)
-          .replace('{{penalty}}', String(penalty))
+          .replace('{{value}}', String(penalty))
           .replace('{{points}}', points[penalty === 1 ? 0 : 1]),
         penaltyDuration
       );
@@ -365,7 +365,7 @@ export default class WordleGame {
       parent: this.#notification,
       prepend: true,
       attributes: { class: 'alert' },
-      textContent: message,
+      innerHTML: message,
     });
 
     await this.#playAnimation([alert], 'hide', {
